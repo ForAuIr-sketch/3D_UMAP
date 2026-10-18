@@ -5,6 +5,9 @@
   "genes": 434,
   "required": 16,
   "checks": [
+    "Melanocytes annotation (1247 cells)",
+    "no legacy labels in active metadata",
+    "metadata SHA256",
     "unique cell IDs",
     "all metadata columns",
     "all binary lengths",
@@ -13,5 +16,19 @@
     "all zero counts",
     "missing numeric values remain missing",
     "categorical missing values explicit"
-  ]
+  ],
+  "annotation_update": {
+    "date": "2026-10-19",
+    "label": "Melanocytes",
+    "major_cells": 1247,
+    "fine_annotation_replacements": 239,
+    "csv_numeric_text_unchanged": true,
+    "r_export_mapping_verified": true,
+    "browser_verified": [
+      "Melanocytes legend: 1247 cells",
+      "3D point label: Melanocytes",
+      "Melanocytes marker panel",
+      "MLANA expression loaded"
+    ]
+  }
 }

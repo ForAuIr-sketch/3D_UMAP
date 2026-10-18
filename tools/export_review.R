@@ -3,8 +3,21 @@ args<-commandArgs(trailingOnly=TRUE)
 if(length(args)!=3)stop('Usage: Rscript tools/export_review.R source.rds original_viewer_directory output_directory')
 source_file <- args[1]
 viewer_dir <- args[2]
+relabel_annotations <- function(v) {
+  aliases <- c('Mast cell', 'Mast cells')
+  if (is.factor(v)) {
+    new_levels <- levels(v)
+    new_levels[new_levels %in% aliases] <- 'Melanocytes'
+    values <- as.character(v)
+    values[values %in% aliases] <- 'Melanocytes'
+    return(factor(values, levels=unique(new_levels), ordered=is.ordered(v)))
+  }
+  if (is.character(v)) v[v %in% aliases] <- 'Melanocytes'
+  v
+}
 root <- args[3];dir.create(file.path(root,'data/genes'),recursive=TRUE,showWarnings=FALSE)
 ref <- read.csv(file.path(viewer_dir,'data/umap3d_celltype.csv'),check.names=FALSE)
+ref[] <- lapply(ref,relabel_annotations)
 oldfile <- file.path(viewer_dir,'data/umap3d_multifeature.csv')
 h <- names(read.csv(oldfile,nrows=0,check.names=FALSE));non_genes<-c('cell_id','UMAP3D_1','UMAP3D_2','UMAP3D_3','CellMajortype','Age_group','ECM_AUC','SenCID_score','SenCID_binary')
 ecm <- setdiff(h,non_genes)
@@ -16,8 +29,8 @@ panels <- list(
  'Pericytes and smooth muscle'=c('RGS5','PDGFRB','CSPG4','ABCC9','KCNJ8','MCAM','NOTCH3','ACTA2','TAGLN','MYH11','MYL9','DES','RBP1','CALD1'),
  'Myeloid'=c('CD68','CD14','LYZ','LST1','AIF1','TYROBP','FCER1G','CSF1R','ITGAM','FCGR3A','CD163','MRC1','C1QA','C1QB','C1QC','S100A8','S100A9','FCN1','CD74','HLA-DRA','HLA-DPA1','HLA-DPB1','CD1C','FCER1A','CLEC10A','ITGAX','CLEC9A','XCR1','LILRA4','GZMB'),
  'T and NK cells'=c('CD3D','CD3E','CD3G','TRAC','TRBC1','TRBC2','CD247','CD2','CD4','CD8A','CD8B','IL7R','CCR7','LTB','TCF7','FOXP3','IL2RA','CTLA4','PDCD1','NKG7','GNLY','PRF1','GZMA','GZMB','KLRD1'),
- 'Mast cells'=c('KIT','TPSAB1','TPSB2','CPA3','MS4A2','HDC','FCER1A','GATA2','CTSG','SLC18A2','IL1RL1'),
- 'Melanocytes (annotation check)'=c('PMEL','MLANA','TYR','TYRP1','DCT','MITF','SOX10','TRPM1'),
+ 'Additional immune markers'=c('KIT','TPSAB1','TPSB2','CPA3','MS4A2','HDC','FCER1A','GATA2','CTSG','SLC18A2','IL1RL1'),
+ 'Melanocytes'=c('KIT','PMEL','MLANA','TYR','TYRP1','DCT','MITF','SOX10','TRPM1'),
  'B and plasma cells'=c('CD79A','CD79B','MS4A1','CD19','CD37','CD22','MZB1','JCHAIN','SDC1'),
  'Schwann cells'=c('S100B','PLP1','MPZ','SOX10','S100A1','MBP'),
  'ECM panel'=ecm,
@@ -25,6 +38,7 @@ panels <- list(
 required <- c('PECAM1','CCL21','CD3D','CD3E','CD68','CD14','KRT1','KRT5','KRT10','KRT15','EPCAM','DCN','COL1A1','BMP1','ACTA2','KIT')
 x<-readRDS(source_file);m<-LayerData(x,assay='RNA',layer='data');meta<-x[[]]
 stopifnot(!anyDuplicated(ref$cell_id),setequal(ref$cell_id,colnames(x)));meta<-meta[ref$cell_id,,drop=FALSE]
+meta[]<-lapply(meta,relabel_annotations)
 stopifnot(identical(as.character(meta$CellMajortype),ref$CellMajortype))
 embs<-Reductions(x);print(embs)
 coords<-ref[,c('UMAP3D_1','UMAP3D_2','UMAP3D_3')]
@@ -33,7 +47,7 @@ for (red in embs) { e<-Embeddings(x,red);if(ncol(e)>=3) {if(isTRUE(all.equal(unn
 stopifnot(coord_match)
 selected<-unique(c(required,unlist(panels,use.names=FALSE)));present<-intersect(selected,rownames(m));missing<-setdiff(selected,present)
 stopifnot(all(required %in% present))
-# Retain all metadata without renaming, plus the existing viewer's derived scores.
+# Retain all metadata fields; apply the documented Melanocytes label correction to annotation values.
 base<-data.frame(cell_id=ref$cell_id,coords,meta,check.names=FALSE)
 keep<-c('cell_id','Age_group','ECM_AUC','SenCID_score','SenCID_binary')
 cl<-rep('NULL',length(h));cl[h %in% keep]<-'character'
@@ -50,7 +64,7 @@ for(i in seq_along(present)) {
  gene_manifest[[g]]<-list(file=paste0('data/genes/',filename),min=min(v),max=max(v),q02=unname(quantile(v,.02,type=1)),q98=unname(quantile(v,.98,type=1)),zero_count=sum(v==0),positive_count=sum(v>0),sha256=digest::digest(file=file.path(root,'data/genes',filename),algo='sha256'))
 }
 panels<-lapply(panels,function(g)intersect(g,present))
-manifest<-list(version=1,cells=nrow(base),genes=gene_manifest,panels=panels,metadata=metadata,required_genes=required,missing_requested_panel_genes=missing,source=list(file=basename(source_file),source_bytes=file.info(source_file)$size,metadata_sha256=digest::digest(file=file.path(root,'data/metadata_all.csv'),algo='sha256'),assay='RNA',layer='data',expression='Seurat RNA data layer, exported without re-normalization',encoding='Float32 little-endian',cell_order='cells_metadata.csv cell_id',coordinates='original 3D embedding; matched to viewer CSV',annotation='original CellMajortype; not re-annotated',legacy_scores='ECM_AUC, SenCID_score, SenCID_binary and Age_group retained from existing multifeature CSV; not recalculated',annotation_note='Original Mast cells annotation requires review: high melanocyte-marker expression and low mast-cell-marker detection.'))
+manifest<-list(version=2,cells=nrow(base),genes=gene_manifest,panels=panels,metadata=metadata,required_genes=required,missing_requested_panel_genes=missing,source=list(file=basename(source_file),source_bytes=file.info(source_file)$size,metadata_sha256=digest::digest(file=file.path(root,'data/metadata_all.csv'),algo='sha256'),assay='RNA',layer='data',expression='Seurat RNA data layer, exported without re-normalization',encoding='Float32 little-endian',cell_order='cells_metadata.csv cell_id',coordinates='original 3D embedding; matched to viewer CSV',annotation='Viewer annotations use Melanocytes after the user-requested correction; source RDS is unchanged',legacy_scores='ECM_AUC, SenCID_score, SenCID_binary and Age_group retained from existing multifeature CSV; not recalculated',annotation_note='Melanocytes labels are applied to all exported annotation fields; expression and UMAP coordinates are unchanged.'))
 write_json(manifest,file.path(root,'data/manifest.json'),auto_unbox=TRUE,pretty=TRUE,na='null',null='null')
 write.csv(data.frame(Gene=selected,Available=selected %in% present,Required=selected %in% required),file.path(root,'data/gene_inventory.csv'),row.names=FALSE)
 cat('EXPORTED',nrow(base),'cells;',length(metadata),'metadata fields;',length(present),'genes; missing:',paste(missing,collapse=', '),'\n')

@@ -37,7 +37,7 @@ const expected = {
   'Pericytes': 4308,
   'Myeloids': 3968,
   'T cells': 2481,
-  'Mast cells': 1247,
+  'Melanocytes': 1247,
   'Lymphatic Endothelial cells': 1178
 };
 let ok = p.n === expected.n;

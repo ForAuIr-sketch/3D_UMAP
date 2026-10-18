@@ -5,7 +5,8 @@ Original metadata fields: 37
 Selected genes: 434
 Required genes: 16/16 present
 3D coordinates: verified against RDS umap3d embedding
-All CellMajortype annotations: identical to source
+Viewer annotation update (2026-10-19): Melanocytes, 1247 cells; 239 fine-annotation labels replaced; source RDS unchanged
 All binary SHA256 hashes, zero counts and lengths verified
 Browser: 16 required genes and 37 metadata modes exercised; PNG export 2234x2620 verified in UI.
 See README.md and data/validation.json.
+Browser annotation check (2026-10-19): Melanocytes legend (1247), point label and marker panel verified; MLANA expression loaded.

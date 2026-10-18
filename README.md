@@ -5,7 +5,7 @@
 - **68,646 cells；37 个原始 metadata 字段；434 个基因。**
 - 表达量来自 `scRNA_merged_3DUMAP.rds` 的 `RNA` assay / `data` layer，未重新归一化或替换为 integrated / scale.data。
 - 所有细胞以 `cell_id` 精确对齐；原 UMAP CSV 已与 RDS 的 `umap3d` embedding 逐项核对。
-- 细胞原注释、坐标和顺序保留。基因按需加载，每个 Float32 文件约 275 KB，缓存最多 12 个基因。
+- 细胞坐标和顺序保留；网页注释已按用户要求于2026-10-19统一更新为 Melanocytes。基因按需加载，每个 Float32 文件约 275 KB，缓存最多 12 个基因。
 - 数据目录含 283 个原网页 ECM panel 基因，并加入各类细胞及其他常用 marker；重叠基因只存储一次。精确数量以 manifest 为准。
 
 ## 打开
@@ -41,18 +41,22 @@ python3 tools/serve.py
 
 ## 数据来源与解释
 
-- `data/metadata_all.csv`：RDS 的全部 37 个 metadata 列，另加行名 cell_id；字段 R 类型、分类水平和缺失计数记录在 manifest。
+- `data/metadata_all.csv`：RDS 的全部 37 个 metadata 列，另加行名 cell_id；注释标签按本次用户要求更新为 Melanocytes，字段 R 类型、分类水平和缺失计数记录在 manifest。
 - `data/cells_metadata.csv`：metadata + 原 3D 坐标 + 旧网页的派生字段。
 - 原网页 `Age_group`、`ECM_AUC`、`SenCID_score`、`SenCID_binary` 从原 `umap3d_multifeature.csv` 按 cell_id 保留；本次未重算，也未混同为 RDS metadata 中同名近似字段。原始 `age_group` 和六套 `SenCID_Score01–06` 等仍单独保留。
 - `data/genes/*.f32`：对应 manifest 中基因名，按 cells_metadata.csv 顺序存储的 little-endian Float32。RNA/data 的原数值仅做 Float32 存储精度转换。
 - `data/manifest.json`：基因清单、分组、数值范围、零表达数、文件 SHA256、metadata 字段信息和数据来源。
 - `data/validation.json`：自动校验记录；浏览器另已实际切换验证 16 个用户指定基因和全部 37 个 metadata 字段，并完成 PNG 导出检查。
 
-### 注释复核
+### 注释更新（2026-10-19）
 
-原 “Mast cells” 群体共有 1,247 个细胞。原 RNA/data 中：TPSAB1、TPSB2、CPA3 的检出率分别约 1.20%、0.80%、0.40%，而 MLANA、DCT、TYR 分别约 92.86%、90.30%、84.36%；MITF 约 96.31%。此模式更支持黑色素细胞身份，需要回到聚类、QC 和多 marker 共表达进一步确认。此版本保留原 Mast cells 标签，并加入独立 Melanocytes 面板供核查，没有自动改名。KIT 单独阳性不能确认肥大细胞。
+按用户明确要求，网页主注释中的1,247个细胞现统一显示为 **Melanocytes**；配套CSV的对应CellType、CellMajortype标签及metadata中239处原肥大细胞细注释也已更新为Melanocytes。细注释与主注释为不同层级，本次逐项替换指定标签，没有重新聚类或改变其他细胞归属。原始RDS文件未改动。
 
-ACTA2/TAGLN/MYH11 是壁细胞/平滑肌相关标志，不能独立区分周细胞和血管平滑肌细胞；CLDN5/PECAM1 可在血管和淋巴管内皮间共享；CD14、CD68 等反映髓系亚群特征，不能用单基因代替整个髓系注释。此网页是表达探索和可视化工具，不进行差异检验或重新注释。
+该群MLANA、DCT、TYR的检出率分别约92.86%、90.30%、84.36%，MITF约96.31%。Melanocytes基因面板包含这些标志及KIT。额外免疫基因仍可在Additional immune markers面板查询，434个基因的表达值全部保留。
+
+网页图例、点标签、metadata着色、逐细胞信息及CSV下载均从已更新的数据读取；再导出R脚本会应用同样的注释标签映射。历史previews图片是之前版本的截图，保留供追溯。
+
+ACTA2/TAGLN/MYH11 是壁细胞/平滑肌相关标志，不能独立区分周细胞和血管平滑肌细胞；CLDN5/PECAM1 可在血管和淋巴管内皮间共享；CD14、CD68 等反映髓系亚群特征，不能用单基因代替整个髓系注释。此网页是表达探索和可视化工具，不进行差异检验；本次仅按用户要求更新注释标签。
 
 检出率证据表：`data/mast_identity_positive_percent.csv`；平均表达表：`data/mast_identity_mean.csv`。
 
@@ -77,4 +81,4 @@ node tools/test_review.mjs
 
 ## English reviewer note
 
-This browser-based atlas displays 68,646 cells at their original 3D UMAP coordinates. It provides all 37 metadata fields from the Seurat object and 434 selected RNA genes, including the original ECM panel and canonical lineage markers. Expression is read from the Seurat RNA/data layer without re-normalization. Genes are loaded individually; color legends report the selected display range. PNG figures and view/provenance records can be exported. Original annotations are retained; the group originally labelled “Mast cells” requires review because its marker profile is strongly melanocytic. This viewer does not perform differential expression testing or re-annotation.
+This browser-based atlas displays 68,646 cells at their original 3D UMAP coordinates. It provides all 37 metadata fields from the Seurat object and 434 selected RNA genes, including the original ECM panel and canonical lineage markers. Expression is read from the Seurat RNA/data layer without re-normalization. Genes are loaded individually; color legends report the selected display range. PNG figures and view/provenance records can be exported. The 1,247-cell group is labelled Melanocytes following the user-requested annotation correction on 19 October 2026. Matching labels in fine annotations are updated consistently. The original RDS, cell coordinates, cell order, and expression values are unchanged. This viewer does not perform differential expression testing.

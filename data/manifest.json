@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "cells": 68646,
   "genes": {
     "PECAM1": {
@@ -4488,7 +4488,7 @@
       "GZMB",
       "KLRD1"
     ],
-    "Mast cells": [
+    "Additional immune markers": [
       "KIT",
       "TPSAB1",
       "TPSB2",
@@ -4501,7 +4501,7 @@
       "SLC18A2",
       "IL1RL1"
     ],
-    "Melanocytes (annotation check)": [
+    "Melanocytes": [
       "PMEL",
       "MLANA",
       "TYR",
@@ -4509,7 +4509,8 @@
       "DCT",
       "MITF",
       "SOX10",
-      "TRPM1"
+      "TRPM1",
+      "KIT"
     ],
     "B and plasma cells": [
       "CD79A",
@@ -5234,10 +5235,18 @@
     "encoding": "Float32 little-endian",
     "cell_order": "cells_metadata.csv cell_id",
     "coordinates": "original 3D embedding; matched to viewer CSV",
-    "annotation": "original CellMajortype; not re-annotated",
+    "annotation": "Viewer annotations updated to Melanocytes by user instruction on 2026-10-19; source RDS is unchanged.",
     "legacy_scores": "ECM_AUC, SenCID_score, SenCID_binary and Age_group retained from existing multifeature CSV; not recalculated",
-    "annotation_note": "Original Mast cells annotation requires review: high melanocyte-marker expression and low mast-cell-marker detection.",
+    "annotation_note": "The 1,247-cell major group is labelled Melanocytes. Related fine-annotation labels were also updated; cell IDs, coordinates and expression values are unchanged.",
     "source_bytes": 1537965442,
-    "metadata_sha256": "1e236ab8a1791ea5dedc555de18f886e6a5b0e7538343777c11798f9183cabb3"
+    "metadata_sha256": "db725e33ed7e8eb5e805036f37e8876202bdf065ff353f2cda5174e9226d40e6",
+    "annotation_update": {
+      "date": "2026-10-19",
+      "target": "Melanocytes",
+      "major_group_cells": 1247,
+      "fine_annotation_replacements": 239,
+      "source_rds_modified": false,
+      "reason": "User-requested annotation correction after marker review."
+    }
   }
 }

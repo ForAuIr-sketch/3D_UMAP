@@ -5,7 +5,7 @@
  *            -> ShaderMaterial (soft sprites) -> EffectComposer + UnrealBloom
  *            -> optional per-type density shells (surface.js)
  *
- * Original coordinates and annotations are preserved. RNA expression is loaded
+ * Original coordinates are preserved; viewer annotation updates are recorded in the manifest. RNA expression is loaded
  * per gene; all original Seurat metadata can be inspected and used for color.
  * ========================================================================== */
 
@@ -1613,7 +1613,7 @@ function installReviewControls() {
     <label class="control-label" for="expression-scale">Continuous color scale</label><select id="expression-scale"><option value="percentile">2–98% percentile clip</option><option value="full">Full data range</option></select>
     <div class="review-note">RNA expression · zeros retained · missing metadata shown in gray. Color scales are specific to the selected feature.</div>
     <button id="export-view" type="button">Save view & data provenance</button>
-    <details class="dataset-details"><summary>Dataset & downloads</summary><div id="dataset-summary"></div><a href="data/metadata_all.csv" download>Download all metadata (CSV)</a><a href="data/gene_inventory.csv" download>Download gene inventory (CSV)</a><a href="data/manifest.json" download>Download provenance (JSON)</a><button id="export-expression" type="button">Download selected gene (CSV)</button><p class="annotation-note">Annotation check: original “Mast cells” labels are retained. This group shows melanocyte-marker expression; review before publication.</p></details>
+    <details class="dataset-details"><summary>Dataset & downloads</summary><div id="dataset-summary"></div><a href="data/metadata_all.csv" download>Download all metadata (CSV)</a><a href="data/gene_inventory.csv" download>Download gene inventory (CSV)</a><a href="data/manifest.json" download>Download provenance (JSON)</a><button id="export-expression" type="button">Download selected gene (CSV)</button><p class="annotation-note">Annotation updated: the 1,247-cell group is labelled Melanocytes. Cell coordinates and RNA expression values are unchanged.</p></details>
     <details id="cell-inspector"><summary>Inspect a cell</summary><p class="review-note">Click a point to inspect all metadata and the active gene.</p><div id="cell-metadata"></div></details>`;
   const geneControl=document.querySelector('.control-gene');geneControl.after(block);
   const panel=block.querySelector('#marker-panel'),selectGene=block.querySelector('#panel-gene');
