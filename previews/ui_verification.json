@@ -1,0 +1,773 @@
+[
+ {
+  "scenario": "A_dark_default_labels",
+  "url": "http://127.0.0.1:8000/?bg=dark&labels=1&v=1789824269045",
+  "consoleIssues": [
+   "log.warning: [.WebGL-0x12c000dc600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+   "log.warning: [.WebGL-0x12c000dc600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+   "log.warning: [.WebGL-0x12c000dc600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+   "log.warning: [.WebGL-0x12c000dc600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  ],
+  "state": {
+   "ready": true,
+   "surfacesReady": true,
+   "info": {
+    "cells": 68646,
+    "types": 8,
+    "preset": "balanced",
+    "surfaces": 8,
+    "labelsVisible": true,
+    "figureMode": false
+   },
+   "bodyClass": "",
+   "containerBg": "rgba(0, 0, 0, 0)",
+   "labelCount": 8,
+   "labelsVisible": 8,
+   "labels": [
+    {
+     "text": "Keratinocytes",
+     "cx": 768.73,
+     "cy": 408.53,
+     "fontSize": "11.5px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(97, 210, 196)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Fibroblasts",
+     "cx": 486.1,
+     "cy": 479.62,
+     "fontSize": "11.5px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(141, 182, 249)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Vascular Endothelial cells",
+     "cx": 655.46,
+     "cy": 744.78,
+     "fontSize": "11.5px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(248, 182, 114)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Pericytes",
+     "cx": 412.29,
+     "cy": 333.81,
+     "fontSize": "11.5px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(194, 152, 249)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Myeloids",
+     "cx": 671.31,
+     "cy": 488.02,
+     "fontSize": "11.5px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(134, 219, 134)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "T cells",
+     "cx": 722.78,
+     "cy": 537.04,
+     "fontSize": "11.5px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(249, 138, 178)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Mast cells",
+     "cx": 477.83,
+     "cy": 699.83,
+     "fontSize": "11.5px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(255, 237, 131)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Lymphatic Endothelial cells",
+     "cx": 529.78,
+     "cy": 651.42,
+     "fontSize": "11.5px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(255, 160, 131)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    }
+   ],
+   "legendColor": "rgb(255, 255, 255)",
+   "legendRows": 8,
+   "brightnessDisabled": false,
+   "bgSelect": "dark",
+   "labelSlider": "12",
+   "panelVisible": true,
+   "statusVisible": true,
+   "lastExport": null
+  },
+  "file": "/Users/biefan/Desktop/aging/3D_UMAP/previews/A_dark_default_labels.png"
+ },
+ {
+  "scenario": "B_black_label20",
+  "url": "http://127.0.0.1:8000/?bg=black&labels=1&labelfont=20&v=1789824269045",
+  "consoleIssues": [],
+  "state": {
+   "ready": true,
+   "surfacesReady": true,
+   "info": {
+    "cells": 68646,
+    "types": 8,
+    "preset": "balanced",
+    "surfaces": 8,
+    "labelsVisible": true,
+    "figureMode": false
+   },
+   "bodyClass": "bg-black",
+   "containerBg": "rgb(0, 0, 0)",
+   "labelCount": 8,
+   "labelsVisible": 8,
+   "labels": [
+    {
+     "text": "Keratinocytes",
+     "cx": 768.73,
+     "cy": 408.53,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(97, 210, 196)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Fibroblasts",
+     "cx": 486.1,
+     "cy": 479.62,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(141, 182, 249)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Vascular Endothelial cells",
+     "cx": 655.46,
+     "cy": 744.78,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(248, 182, 114)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Pericytes",
+     "cx": 412.29,
+     "cy": 333.81,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(194, 152, 249)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Myeloids",
+     "cx": 671.31,
+     "cy": 488.02,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(134, 219, 134)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "T cells",
+     "cx": 722.78,
+     "cy": 537.04,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(249, 138, 178)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Mast cells",
+     "cx": 477.83,
+     "cy": 699.83,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(255, 237, 131)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Lymphatic Endothelial cells",
+     "cx": 529.78,
+     "cy": 651.42,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(255, 160, 131)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    }
+   ],
+   "legendColor": "rgb(255, 255, 255)",
+   "legendRows": 8,
+   "brightnessDisabled": true,
+   "bgSelect": "black",
+   "labelSlider": "20",
+   "panelVisible": true,
+   "statusVisible": true,
+   "lastExport": null
+  },
+  "file": "/Users/biefan/Desktop/aging/3D_UMAP/previews/B_black_label20.png"
+ },
+ {
+  "scenario": "C_white_label20",
+  "url": "http://127.0.0.1:8000/?bg=white&labels=1&labelfont=20&v=1789824269045",
+  "consoleIssues": [],
+  "state": {
+   "ready": true,
+   "surfacesReady": true,
+   "info": {
+    "cells": 68646,
+    "types": 8,
+    "preset": "balanced",
+    "surfaces": 8,
+    "labelsVisible": true,
+    "figureMode": false
+   },
+   "bodyClass": "bg-white",
+   "containerBg": "rgb(255, 255, 255)",
+   "labelCount": 8,
+   "labelsVisible": 8,
+   "labels": [
+    {
+     "text": "Keratinocytes",
+     "cx": 768.73,
+     "cy": 408.53,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(97, 210, 196)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Fibroblasts",
+     "cx": 486.1,
+     "cy": 479.62,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(141, 182, 249)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Vascular Endothelial cells",
+     "cx": 655.46,
+     "cy": 744.78,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(248, 182, 114)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Pericytes",
+     "cx": 412.29,
+     "cy": 333.81,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(194, 152, 249)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Myeloids",
+     "cx": 671.31,
+     "cy": 488.02,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(134, 219, 134)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "T cells",
+     "cx": 722.78,
+     "cy": 537.04,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(249, 138, 178)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Mast cells",
+     "cx": 477.83,
+     "cy": 699.83,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(255, 237, 131)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Lymphatic Endothelial cells",
+     "cx": 529.78,
+     "cy": 651.42,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(255, 160, 131)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    }
+   ],
+   "legendColor": "rgb(17, 24, 39)",
+   "legendRows": 8,
+   "brightnessDisabled": true,
+   "bgSelect": "white",
+   "labelSlider": "20",
+   "panelVisible": true,
+   "statusVisible": true,
+   "lastExport": null
+  },
+  "file": "/Users/biefan/Desktop/aging/3D_UMAP/previews/C_white_label20.png"
+ },
+ {
+  "scenario": "D_white_labels_off",
+  "url": "http://127.0.0.1:8000/?bg=white&labels=0&labelfont=20&v=1789824269045",
+  "consoleIssues": [],
+  "state": {
+   "ready": true,
+   "surfacesReady": true,
+   "info": {
+    "cells": 68646,
+    "types": 8,
+    "preset": "balanced",
+    "surfaces": 8,
+    "labelsVisible": false,
+    "figureMode": false
+   },
+   "bodyClass": "bg-white",
+   "containerBg": "rgb(255, 255, 255)",
+   "labelCount": 8,
+   "labelsVisible": 8,
+   "labels": [
+    {
+     "text": "Keratinocytes",
+     "cx": 0,
+     "cy": 0,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(97, 210, 196)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Fibroblasts",
+     "cx": 0,
+     "cy": 0,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(141, 182, 249)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Vascular Endothelial cells",
+     "cx": 0,
+     "cy": 0,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(248, 182, 114)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Pericytes",
+     "cx": 0,
+     "cy": 0,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(194, 152, 249)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Myeloids",
+     "cx": 0,
+     "cy": 0,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(134, 219, 134)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "T cells",
+     "cx": 0,
+     "cy": 0,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(249, 138, 178)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Mast cells",
+     "cx": 0,
+     "cy": 0,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(255, 237, 131)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Lymphatic Endothelial cells",
+     "cx": 0,
+     "cy": 0,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(255, 160, 131)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    }
+   ],
+   "legendColor": "rgb(17, 24, 39)",
+   "legendRows": 8,
+   "brightnessDisabled": true,
+   "bgSelect": "white",
+   "labelSlider": "20",
+   "panelVisible": true,
+   "statusVisible": true,
+   "lastExport": null
+  },
+  "file": "/Users/biefan/Desktop/aging/3D_UMAP/previews/D_white_labels_off.png"
+ },
+ {
+  "scenario": "E_white_figure_export4x",
+  "url": "http://127.0.0.1:8000/?bg=white&labels=1&labelfont=20&figure=1&v=1789824269045",
+  "consoleIssues": [],
+  "state": {
+   "ready": true,
+   "surfacesReady": true,
+   "info": {
+    "cells": 68646,
+    "types": 8,
+    "preset": "balanced",
+    "surfaces": 8,
+    "labelsVisible": true,
+    "figureMode": true
+   },
+   "bodyClass": "bg-white figure-mode",
+   "containerBg": "rgb(255, 255, 255)",
+   "labelCount": 8,
+   "labelsVisible": 8,
+   "labels": [
+    {
+     "text": "Keratinocytes",
+     "cx": 772.91,
+     "cy": 422.91,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(97, 210, 196)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Fibroblasts",
+     "cx": 480.34,
+     "cy": 496.5,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(141, 182, 249)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Vascular Endothelial cells",
+     "cx": 655.66,
+     "cy": 770.99,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(248, 182, 114)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Pericytes",
+     "cx": 403.92,
+     "cy": 345.56,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(194, 152, 249)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Myeloids",
+     "cx": 672.06,
+     "cy": 505.2,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(134, 219, 134)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "T cells",
+     "cx": 725.35,
+     "cy": 555.94,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(249, 138, 178)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Mast cells",
+     "cx": 471.77,
+     "cy": 724.46,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(255, 237, 131)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    },
+    {
+     "text": "Lymphatic Endothelial cells",
+     "cx": 525.55,
+     "cy": 674.35,
+     "fontSize": "20px",
+     "color": "rgb(17, 24, 39)",
+     "borderColor": "rgb(255, 160, 131)",
+     "borderWidth": "1px",
+     "bg": "rgba(255, 255, 255, 0.78)"
+    }
+   ],
+   "legendColor": "rgb(17, 24, 39)",
+   "legendRows": 8,
+   "brightnessDisabled": true,
+   "bgSelect": "white",
+   "labelSlider": "20",
+   "panelVisible": false,
+   "statusVisible": false,
+   "lastExport": {
+    "scale": 4,
+    "effectiveScale": 2.14,
+    "gpuMax": 8192,
+    "width": 2782,
+    "height": 2140,
+    "scaleReduced": true,
+    "softwareRenderer": true,
+    "maxMegapixels": 6,
+    "attempts": [
+     {
+      "scale": 2.14,
+      "width": 2782,
+      "height": 2140,
+      "content": true,
+      "glErrors": 0
+     }
+    ],
+    "hasContent": true,
+    "backgroundMode": "white",
+    "transparent": false,
+    "labelSize": 20,
+    "labelsShown": true,
+    "bloom": 0.55,
+    "corners": [
+     [
+      255,
+      255,
+      255
+     ],
+     [
+      255,
+      255,
+      255
+     ],
+     [
+      255,
+      255,
+      255
+     ],
+     [
+      255,
+      255,
+      255
+     ]
+    ],
+    "bytes": 573622
+   }
+  },
+  "file": "/Users/biefan/Desktop/aging/3D_UMAP/previews/E_white_figure_export4x.png"
+ },
+ {
+  "scenario": "F_black_figure_export4x",
+  "url": "http://127.0.0.1:8000/?bg=black&labels=1&labelfont=20&figure=1&v=1789824269045",
+  "consoleIssues": [],
+  "state": {
+   "ready": true,
+   "surfacesReady": true,
+   "info": {
+    "cells": 68646,
+    "types": 8,
+    "preset": "balanced",
+    "surfaces": 8,
+    "labelsVisible": true,
+    "figureMode": true
+   },
+   "bodyClass": "bg-black figure-mode",
+   "containerBg": "rgb(0, 0, 0)",
+   "labelCount": 8,
+   "labelsVisible": 8,
+   "labels": [
+    {
+     "text": "Keratinocytes",
+     "cx": 772.91,
+     "cy": 422.91,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(97, 210, 196)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Fibroblasts",
+     "cx": 480.34,
+     "cy": 496.5,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(141, 182, 249)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Vascular Endothelial cells",
+     "cx": 655.66,
+     "cy": 770.99,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(248, 182, 114)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Pericytes",
+     "cx": 403.92,
+     "cy": 345.56,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(194, 152, 249)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Myeloids",
+     "cx": 672.06,
+     "cy": 505.2,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(134, 219, 134)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "T cells",
+     "cx": 725.35,
+     "cy": 555.94,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(249, 138, 178)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Mast cells",
+     "cx": 471.77,
+     "cy": 724.46,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(255, 237, 131)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    },
+    {
+     "text": "Lymphatic Endothelial cells",
+     "cx": 525.55,
+     "cy": 674.35,
+     "fontSize": "20px",
+     "color": "rgba(255, 255, 255, 0.94)",
+     "borderColor": "rgb(255, 160, 131)",
+     "borderWidth": "0px",
+     "bg": "rgba(6, 10, 20, 0.55)"
+    }
+   ],
+   "legendColor": "rgb(255, 255, 255)",
+   "legendRows": 8,
+   "brightnessDisabled": true,
+   "bgSelect": "black",
+   "labelSlider": "20",
+   "panelVisible": false,
+   "statusVisible": false,
+   "lastExport": {
+    "scale": 4,
+    "effectiveScale": 2.14,
+    "gpuMax": 8192,
+    "width": 2782,
+    "height": 2140,
+    "scaleReduced": true,
+    "softwareRenderer": true,
+    "maxMegapixels": 6,
+    "attempts": [
+     {
+      "scale": 2.14,
+      "width": 2782,
+      "height": 2140,
+      "content": true,
+      "glErrors": 0
+     }
+    ],
+    "hasContent": true,
+    "backgroundMode": "black",
+    "transparent": false,
+    "labelSize": 20,
+    "labelsShown": true,
+    "bloom": 0.55,
+    "corners": [
+     [
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    "bytes": 2013798
+   }
+  },
+  "file": "/Users/biefan/Desktop/aging/3D_UMAP/previews/F_black_figure_export4x.png"
+ }
+]

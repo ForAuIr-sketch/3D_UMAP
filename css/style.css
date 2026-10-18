@@ -1,0 +1,542 @@
+/* ==========================================================================
+ * style.css — dark scientific layout: full-screen viewport, right legend,
+ * left control panel, floating cluster labels.
+ * ========================================================================== */
+
+:root {
+  --bg: #05070f;
+  --panel-bg: rgba(14, 19, 32, 0.86);
+  --panel-border: rgba(120, 145, 190, 0.22);
+  --text: #dce4f2;
+  --text-dim: #8d9bb5;
+  --accent: #4fd8c8;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ------------------------------------------------------------------ layout */
+#viewport {
+  position: fixed;
+  inset: 0 300px 34px 0;          /* leave room for the legend + status bar */
+  overflow: hidden;
+}
+#viewport canvas { display: block; }
+
+/* ------------------------------------------------------------ legend panel */
+#legend {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 300px;
+  padding: 18px 16px 24px;
+  background: linear-gradient(180deg, rgba(11, 15, 26, 0.96), rgba(11, 15, 26, 0.88));
+  border-left: 1px solid var(--panel-border);
+  overflow-y: auto;
+  backdrop-filter: blur(6px);
+}
+
+.legend-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 14px;
+  color: #fff;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.legend-item:hover { background: rgba(255, 255, 255, 0.08); transform: translateX(1px); }
+.legend-item.active { border-color: var(--accent); background: rgba(79, 216, 200, 0.12); }
+.legend-item .swatch {
+  width: 13px; height: 13px; border-radius: 50%;
+  box-shadow: 0 0 9px 1px currentColor;
+  flex: 0 0 auto;
+}
+.legend-item .name { flex: 1 1 auto; }
+.legend-item .count { color: var(--text-dim); font-variant-numeric: tabular-nums; font-size: 11.5px; }
+
+.legend-hint {
+  margin-top: 14px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+/* ------------------------------------------------------------ control panel */
+#panel {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  width: 268px;
+  max-height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  transition: max-height 0.2s ease;
+}
+#panel.collapsed #panel-body,
+#panel.collapsed #log { display: none; }
+
+#panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  border-bottom: 1px solid var(--panel-border);
+}
+#panel-header button {
+  width: 22px; height: 22px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  line-height: 1;
+}
+
+#panel-body { padding: 10px 12px 6px; overflow-y: auto; }
+
+.control {
+  display: grid;
+  grid-template-columns: 1fr 62px;
+  grid-template-areas: "label value" "slider slider";
+  gap: 4px 8px;
+  margin-bottom: 11px;
+  font-size: 11.5px;
+}
+.control-label { grid-area: label; color: var(--text); }
+.control-value { grid-area: value; text-align: right; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.control input[type="range"] {
+  grid-area: slider;
+  width: 100%;
+  height: 3px;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 2px;
+  outline: none;
+}
+.control input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(79, 216, 200, 0.7);
+}
+.control-toggle {
+  grid-template-columns: 16px 1fr;
+  grid-template-areas: "check label";
+  align-items: center;
+}
+.control-toggle input { grid-area: check; accent-color: var(--accent); }
+
+.actions {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0 10px;
+}
+.actions button {
+  padding: 8px 10px;
+  background: rgba(79, 216, 200, 0.12);
+  border: 1px solid rgba(79, 216, 200, 0.35);
+  border-radius: 8px;
+  color: #d8fffa;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.actions button:hover { background: rgba(79, 216, 200, 0.22); }
+
+#log {
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 8px 12px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--text-dim);
+  border-top: 1px solid var(--panel-border);
+}
+
+/* ----------------------------------------------------- cluster labels (DOM) */
+#labels { position: absolute; inset: 0; pointer-events: none; }
+.cell-label {
+  position: absolute;
+  top: 0; left: 0;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--label-size, 11.5px) * 0.5);
+  padding: calc(var(--label-size, 11.5px) * 0.26) calc(var(--label-size, 11.5px) * 0.7);
+  background: rgba(6, 10, 20, 0.55);
+  border-radius: 999px;
+  font-size: var(--label-size, 11.5px);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.94);
+  white-space: nowrap;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+  border: 0 solid transparent;          /* border colour per CellMajortype is set inline */
+  will-change: transform, opacity;
+}
+.cell-label .dot {
+  width: calc(var(--label-size, 11.5px) * 0.6);
+  height: calc(var(--label-size, 11.5px) * 0.6);
+  border-radius: 50%;
+  box-shadow: 0 0 7px 1px currentColor;
+  flex: 0 0 auto;
+}
+
+/* --------------------------------------------------------------------- HUD */
+#hud {
+  position: absolute;
+  right: 12px; bottom: 10px;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+/* transient mouse hint (hidden in figure mode) */
+#hint {
+  position: absolute;
+  left: 50%; bottom: 16px;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(10, 14, 26, 0.72);
+  border: 1px solid var(--panel-border);
+  font-size: 11.5px;
+  color: var(--text-dim);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+#hint.visible { opacity: 1; }
+
+/* ------------------------------------------------------------- quick bar --- */
+#quickbar {
+  position: fixed;
+  top: 14px; right: 314px;
+  display: flex;
+  gap: 6px;
+  z-index: 20;
+}
+#quickbar button {
+  padding: 6px 10px;
+  background: rgba(14, 19, 32, 0.86);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background 0.15s, border-color 0.15s;
+}
+#quickbar button:hover { background: rgba(79, 216, 200, 0.18); border-color: rgba(79, 216, 200, 0.45); }
+#quickbar button.active { background: rgba(79, 216, 200, 0.22); border-color: var(--accent); color: #eafffd; }
+
+/* preset dropdown row */
+.control-select { grid-template-columns: 1fr; grid-template-areas: "label" "select"; }
+.control-select select {
+  grid-area: select;
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--panel-border);
+  border-radius: 7px;
+  color: var(--text);
+  font-size: 11.5px;
+}
+
+/* ------------------------------------------------------------ figure mode -- */
+body.figure-mode #panel,
+body.figure-mode #status,
+body.figure-mode #hint { display: none !important; }
+body.figure-mode #viewport { inset: 0 300px 0 0; }
+body.figure-mode #quickbar button:not(#figure-mode) { display: none; }
+body.figure-mode #hud { opacity: 0.35; }
+
+/* legend can be hidden on demand without entering figure mode */
+body.no-legend #legend { display: none; }
+body.no-legend #viewport { inset: 0 0 34px 0; }
+body.no-legend #status { right: 0; }
+body.no-legend #quickbar { right: 14px; }
+body.no-legend.figure-mode #viewport { inset: 0; }
+body.figure-mode.no-legend #viewport { inset: 0; }
+
+/* ==========================================================================
+ * WHITE background mode — the 3D canvas becomes transparent and the page shows
+ * #FFFFFF, so every piece of UI text has to switch to dark colours to stay
+ * readable. Only colours change here; no layout, no data, no point shader.
+ * ======================================================================== */
+body.bg-white {
+  --bg: #ffffff;
+  --panel-bg: rgba(255, 255, 255, 0.93);
+  --panel-border: rgba(17, 24, 39, 0.16);
+  --text: #111827;
+  --text-dim: #4b5563;
+  --accent: #0f766e;
+}
+body.bg-white #legend {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(248, 250, 252, 0.95));
+  border-left-color: rgba(17, 24, 39, 0.14);
+}
+body.bg-white .legend-title { color: #111827; }
+body.bg-white .legend-item {
+  background: rgba(17, 24, 39, 0.035);
+  color: #111827;
+}
+body.bg-white .legend-item:hover { background: rgba(17, 24, 39, 0.08); }
+body.bg-white .legend-item.active {
+  border-color: var(--accent);
+  background: rgba(15, 118, 110, 0.12);
+}
+body.bg-white .legend-item .count { color: #6b7280; }
+body.bg-white #panel { box-shadow: 0 18px 40px rgba(17, 24, 39, 0.18); }
+body.bg-white #panel-header { color: #111827; }
+body.bg-white #panel-header button,
+body.bg-white #quickbar button {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(17, 24, 39, 0.18);
+  color: #111827;
+}
+body.bg-white #quickbar button:hover { background: rgba(15, 118, 110, 0.12); }
+body.bg-white #quickbar button.active { background: rgba(15, 118, 110, 0.18); color: #0b3b38; }
+body.bg-white .control input[type="range"] { background: rgba(17, 24, 39, 0.20); }
+body.bg-white .control input[type="range"]::-webkit-slider-thumb {
+  background: #0f766e;
+  box-shadow: 0 0 6px rgba(15, 118, 110, 0.55);
+}
+body.bg-white .control-select select {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(17, 24, 39, 0.2);
+  color: #111827;
+}
+body.bg-white .actions button {
+  background: rgba(15, 118, 110, 0.10);
+  border-color: rgba(15, 118, 110, 0.35);
+  color: #0b3b38;
+}
+body.bg-white #log { color: #4b5563; }
+body.bg-white #status {
+  background: rgba(255, 255, 255, 0.94);
+  border-top-color: rgba(17, 24, 39, 0.14);
+  color: #4b5563;
+}
+body.bg-white #hint {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(17, 24, 39, 0.16);
+  color: #4b5563;
+}
+body.bg-white #hud { color: #6b7280; }
+body.bg-white #loading { background: #ffffff; }
+body.bg-white #loading-text { color: #4b5563; }
+body.bg-white .spinner { border-color: rgba(15, 118, 110, 0.25); border-top-color: #0f766e; }
+/* cluster labels on white: dark text, translucent white pill, coloured outline */
+body.bg-white .cell-label {
+  background: rgba(255, 255, 255, 0.78);
+  border-width: 1px;
+  color: #111827;
+  text-shadow: none;
+}
+body.bg-white .cell-label .dot { box-shadow: 0 0 5px 0 currentColor; }
+
+/* the white-background style picker only makes sense in White mode */
+.only-white { display: none; }
+body.bg-white .only-white { display: grid; }
+
+/* ------------------------------------------------- disabled control state -- */
+.control-disabled { opacity: 0.45; }
+.control-disabled input[type="range"] { cursor: not-allowed; }
+
+#status {
+  position: fixed;
+  left: 0; right: 300px; bottom: 0;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--panel-border);
+  background: rgba(8, 11, 20, 0.9);
+}
+
+/* ------------------------------------------------------------ loading mask */
+#loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: #05070f;
+  z-index: 50;
+  transition: opacity 0.35s ease;
+}
+#loading.hidden { opacity: 0; pointer-events: none; }
+#loading-text { font-size: 12.5px; color: var(--text-dim); }
+.spinner {
+  width: 26px; height: 26px;
+  border: 2px solid rgba(79, 216, 200, 0.25);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.fatal { max-width: 520px; padding: 24px; text-align: center; line-height: 1.6; color: #ffd7d7; }
+.fatal small { color: var(--text-dim); }
+
+/* hide the UI while a PNG is being rendered */
+#panel.exporting, #legend.exporting { opacity: 0; }
+
+/* ------------------------------------------------------------- small screens */
+@media (max-width: 900px) {
+  #viewport { inset: 0 0 34px 0; }
+  #legend {
+    top: auto; left: 0; right: 0; bottom: 34px;
+    width: auto; height: 168px;
+    border-left: none;
+    border-top: 1px solid var(--panel-border);
+  }
+  #status { right: 0; }
+}
+
+/* ==========================================================================
+ * COLOR BY — gene search + colour bar (added for the feature colouring)
+ * ======================================================================== */
+.control-gene {
+  display: none;
+  grid-template-columns: 1fr;
+  grid-template-areas: "label" "row" "status";
+}
+body.color-by-gene .control-gene { display: grid; }
+
+.gene-row {
+  grid-area: row;
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.gene-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--panel-border);
+  border-radius: 7px;
+  color: var(--text);
+  font-size: 11.5px;
+  font-family: inherit;
+}
+.gene-row input:focus { outline: none; border-color: var(--accent); }
+.gene-row button {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  background: rgba(79, 216, 200, 0.12);
+  border: 1px solid rgba(79, 216, 200, 0.35);
+  border-radius: 7px;
+  color: #d8fffa;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.gene-row button:hover { background: rgba(79, 216, 200, 0.22); }
+
+.gene-status {
+  grid-area: status;
+  margin-top: 5px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-dim);
+  word-break: break-word;
+}
+.gene-status.ok { color: #7fe3b0; }
+.gene-status.error { color: #ff9a9a; }
+.gene-status.warn { color: #ffd479; }
+
+/* colour bar in the legend (continuous / binary features) */
+.colorbar { display: none; margin: 4px 0 12px; }
+.colorbar.visible { display: block; }
+.colorbar-bar {
+  height: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--panel-border);
+  background: linear-gradient(90deg, #440154, #fde725);
+}
+.colorbar-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.colorbar-note {
+  margin-top: 3px;
+  font-size: 10px;
+  line-height: 1.35;
+  color: var(--text-dim);
+}
+.legend-subtitle {
+  margin: 10px 0 6px;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* white background: keep the new controls readable */
+body.bg-white .gene-row input {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(17, 24, 39, 0.2);
+  color: #111827;
+}
+body.bg-white .gene-row button {
+  background: rgba(15, 118, 110, 0.10);
+  border-color: rgba(15, 118, 110, 0.35);
+  color: #0b3b38;
+}
+body.bg-white .gene-status.ok { color: #0f766e; }
+body.bg-white .gene-status.error { color: #b91c1c; }
+body.bg-white .gene-status.warn { color: #92400e; }
+body.bg-white .colorbar-bar { border-color: rgba(17, 24, 39, 0.18); }

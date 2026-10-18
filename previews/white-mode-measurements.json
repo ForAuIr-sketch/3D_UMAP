@@ -1,0 +1,391 @@
+[
+ {
+  "file": "white_soft.png",
+  "bg": "white",
+  "variant": "soft",
+  "info": {
+   "cells": 68646,
+   "types": 8,
+   "preset": "balanced",
+   "surfaces": 8,
+   "labelsVisible": true,
+   "figureMode": true
+  },
+  "measures": {
+   "perCluster": [
+    {
+     "text": "Keratinocytes",
+     "n": 18080,
+     "tintedFraction": 0.93,
+     "strongInkFraction": 0.3244,
+     "minChannel": 159,
+     "meanBrightness": 250.5,
+     "granularitySD": 9.5
+    },
+    {
+     "text": "Fibroblasts",
+     "n": 18240,
+     "tintedFraction": 0.5888,
+     "strongInkFraction": 0.272,
+     "minChannel": 129,
+     "meanBrightness": 254,
+     "granularitySD": 4.3
+    },
+    {
+     "text": "Vascular Endothelial cells",
+     "n": 18080,
+     "tintedFraction": 0.178,
+     "strongInkFraction": 0.0481,
+     "minChannel": 116,
+     "meanBrightness": 254.8,
+     "granularitySD": 1.7
+    },
+    {
+     "text": "Pericytes",
+     "n": 18080,
+     "tintedFraction": 0.1194,
+     "strongInkFraction": 0.0535,
+     "minChannel": 98,
+     "meanBrightness": 254.8,
+     "granularitySD": 2.2
+    },
+    {
+     "text": "Myeloids",
+     "n": 18080,
+     "tintedFraction": 0.4408,
+     "strongInkFraction": 0.1472,
+     "minChannel": 124,
+     "meanBrightness": 254,
+     "granularitySD": 4.4
+    },
+    {
+     "text": "T cells",
+     "n": 19302,
+     "tintedFraction": 0.4624,
+     "strongInkFraction": 0.1726,
+     "minChannel": 157,
+     "meanBrightness": 252.9,
+     "granularitySD": 6.9
+    },
+    {
+     "text": "Mast cells",
+     "n": 18080,
+     "tintedFraction": 0.1476,
+     "strongInkFraction": 0.0423,
+     "minChannel": 120,
+     "meanBrightness": 254.8,
+     "granularitySD": 1.7
+    },
+    {
+     "text": "Lymphatic Endothelial cells",
+     "n": 18080,
+     "tintedFraction": 0.1246,
+     "strongInkFraction": 0.0345,
+     "minChannel": 120,
+     "meanBrightness": 254.8,
+     "granularitySD": 1.7
+    }
+   ],
+   "global": {
+    "sampled": 260000,
+    "tintedFraction": 0.0601,
+    "nearWhiteFraction": 0.9383,
+    "meanSaturationOfTinted": 0.197
+   }
+  },
+  "consoleIssues": [
+   "log.warning: [.WebGL-0x104000dd800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPi",
+   "log.warning: [.WebGL-0x104000dd800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPi",
+   "log.warning: [.WebGL-0x104000dd800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPi",
+   "log.warning: [.WebGL-0x104000dd800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPi"
+  ]
+ },
+ {
+  "file": "white_balanced.png",
+  "bg": "white",
+  "variant": "balanced",
+  "info": {
+   "cells": 68646,
+   "types": 8,
+   "preset": "balanced",
+   "surfaces": 8,
+   "labelsVisible": true,
+   "figureMode": true
+  },
+  "measures": {
+   "perCluster": [
+    {
+     "text": "Keratinocytes",
+     "n": 18080,
+     "tintedFraction": 0.974,
+     "strongInkFraction": 0.7206,
+     "minChannel": 127,
+     "meanBrightness": 247.6,
+     "granularitySD": 12.3
+    },
+    {
+     "text": "Fibroblasts",
+     "n": 18240,
+     "tintedFraction": 0.6054,
+     "strongInkFraction": 0.3853,
+     "minChannel": 75,
+     "meanBrightness": 253.5,
+     "granularitySD": 5.5
+    },
+    {
+     "text": "Vascular Endothelial cells",
+     "n": 18080,
+     "tintedFraction": 0.1793,
+     "strongInkFraction": 0.1226,
+     "minChannel": 67,
+     "meanBrightness": 254.8,
+     "granularitySD": 1.8
+    },
+    {
+     "text": "Pericytes",
+     "n": 18080,
+     "tintedFraction": 0.1195,
+     "strongInkFraction": 0.079,
+     "minChannel": 23,
+     "meanBrightness": 254.7,
+     "granularitySD": 2.5
+    },
+    {
+     "text": "Myeloids",
+     "n": 18080,
+     "tintedFraction": 0.4584,
+     "strongInkFraction": 0.3162,
+     "minChannel": 75,
+     "meanBrightness": 253.3,
+     "granularitySD": 6.3
+    },
+    {
+     "text": "T cells",
+     "n": 19302,
+     "tintedFraction": 0.4746,
+     "strongInkFraction": 0.3581,
+     "minChannel": 121,
+     "meanBrightness": 251.6,
+     "granularitySD": 9.2
+    },
+    {
+     "text": "Mast cells",
+     "n": 18080,
+     "tintedFraction": 0.1612,
+     "strongInkFraction": 0.0815,
+     "minChannel": 65,
+     "meanBrightness": 254.8,
+     "granularitySD": 1.3
+    },
+    {
+     "text": "Lymphatic Endothelial cells",
+     "n": 18080,
+     "tintedFraction": 0.1466,
+     "strongInkFraction": 0.0653,
+     "minChannel": 65,
+     "meanBrightness": 254.8,
+     "granularitySD": 2.1
+    }
+   ],
+   "global": {
+    "sampled": 260000,
+    "tintedFraction": 0.0628,
+    "nearWhiteFraction": 0.9364,
+    "meanSaturationOfTinted": 0.304
+   }
+  },
+  "consoleIssues": []
+ },
+ {
+  "file": "white_strong.png",
+  "bg": "white",
+  "variant": "strong",
+  "info": {
+   "cells": 68646,
+   "types": 8,
+   "preset": "balanced",
+   "surfaces": 8,
+   "labelsVisible": true,
+   "figureMode": true
+  },
+  "measures": {
+   "perCluster": [
+    {
+     "text": "Keratinocytes",
+     "n": 18080,
+     "tintedFraction": 0.9794,
+     "strongInkFraction": 0.8442,
+     "minChannel": 22,
+     "meanBrightness": 242,
+     "granularitySD": 16.6
+    },
+    {
+     "text": "Fibroblasts",
+     "n": 18240,
+     "tintedFraction": 0.6146,
+     "strongInkFraction": 0.4504,
+     "minChannel": 0,
+     "meanBrightness": 252.8,
+     "granularitySD": 6.6
+    },
+    {
+     "text": "Vascular Endothelial cells",
+     "n": 18080,
+     "tintedFraction": 0.1801,
+     "strongInkFraction": 0.1465,
+     "minChannel": 19,
+     "meanBrightness": 254.7,
+     "granularitySD": 2.2
+    },
+    {
+     "text": "Pericytes",
+     "n": 18080,
+     "tintedFraction": 0.1204,
+     "strongInkFraction": 0.1014,
+     "minChannel": 0,
+     "meanBrightness": 254.4,
+     "granularitySD": 3.8
+    },
+    {
+     "text": "Myeloids",
+     "n": 18080,
+     "tintedFraction": 0.4626,
+     "strongInkFraction": 0.3814,
+     "minChannel": 4,
+     "meanBrightness": 251.5,
+     "granularitySD": 9.8
+    },
+    {
+     "text": "T cells",
+     "n": 19302,
+     "tintedFraction": 0.4786,
+     "strongInkFraction": 0.4172,
+     "minChannel": 36,
+     "meanBrightness": 249.1,
+     "granularitySD": 12.5
+    },
+    {
+     "text": "Mast cells",
+     "n": 18080,
+     "tintedFraction": 0.167,
+     "strongInkFraction": 0.1007,
+     "minChannel": 18,
+     "meanBrightness": 254.9,
+     "granularitySD": 0.9
+    },
+    {
+     "text": "Lymphatic Endothelial cells",
+     "n": 18080,
+     "tintedFraction": 0.1574,
+     "strongInkFraction": 0.0809,
+     "minChannel": 21,
+     "meanBrightness": 254.7,
+     "granularitySD": 2.4
+    }
+   ],
+   "global": {
+    "sampled": 260000,
+    "tintedFraction": 0.0639,
+    "nearWhiteFraction": 0.9357,
+    "meanSaturationOfTinted": 0.419
+   }
+  },
+  "consoleIssues": []
+ },
+ {
+  "file": "dark_reference.png",
+  "bg": "dark",
+  "variant": "balanced",
+  "info": {
+   "cells": 68646,
+   "types": 8,
+   "preset": "balanced",
+   "surfaces": 8,
+   "labelsVisible": true,
+   "figureMode": true
+  },
+  "measures": {
+   "perCluster": [
+    {
+     "text": "Keratinocytes",
+     "n": 18400,
+     "tintedFraction": 0.9999,
+     "strongInkFraction": 0.6732,
+     "minChannel": 7,
+     "meanBrightness": 209.6,
+     "granularitySD": 34.4
+    },
+    {
+     "text": "Fibroblasts",
+     "n": 18560,
+     "tintedFraction": 1,
+     "strongInkFraction": 0.87,
+     "minChannel": 22,
+     "meanBrightness": 151.5,
+     "granularitySD": 61
+    },
+    {
+     "text": "Vascular Endothelial cells",
+     "n": 18400,
+     "tintedFraction": 1,
+     "strongInkFraction": 0.989,
+     "minChannel": 14,
+     "meanBrightness": 93,
+     "granularitySD": 52.5
+    },
+    {
+     "text": "Pericytes",
+     "n": 18400,
+     "tintedFraction": 0.9979,
+     "strongInkFraction": 0.9798,
+     "minChannel": 8,
+     "meanBrightness": 87.7,
+     "granularitySD": 47.3
+    },
+    {
+     "text": "Myeloids",
+     "n": 18445,
+     "tintedFraction": 1,
+     "strongInkFraction": 0.7886,
+     "minChannel": 20,
+     "meanBrightness": 131.4,
+     "granularitySD": 70.9
+    },
+    {
+     "text": "T cells",
+     "n": 19660,
+     "tintedFraction": 1,
+     "strongInkFraction": 0.4395,
+     "minChannel": 19,
+     "meanBrightness": 124.3,
+     "granularitySD": 84.7
+    },
+    {
+     "text": "Mast cells",
+     "n": 18400,
+     "tintedFraction": 1,
+     "strongInkFraction": 0.9191,
+     "minChannel": 6,
+     "meanBrightness": 63.6,
+     "granularitySD": 59.9
+    },
+    {
+     "text": "Lymphatic Endothelial cells",
+     "n": 18400,
+     "tintedFraction": 1,
+     "strongInkFraction": 0.9224,
+     "minChannel": 21,
+     "meanBrightness": 78.1,
+     "granularitySD": 50
+    }
+   ],
+   "global": {
+    "sampled": 260000,
+    "tintedFraction": 0.9969,
+    "nearWhiteFraction": 0,
+    "meanSaturationOfTinted": 0.737
+   }
+  },
+  "consoleIssues": []
+ }
+]

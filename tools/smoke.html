@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>smoke</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "../js/vendor/three/build/three.module.js",
+      "three/addons/": "../js/vendor/three/examples/jsm/"
+    }
+  }
+  </script>
+  <style>
+    #result { position: fixed; left: 0; top: 0; z-index: 99; max-width: 100%;
+              font: 11px/1.5 ui-monospace, Menlo, monospace; color: #9fe;
+              background: #000a; padding: 6px; white-space: pre-wrap; }
+    #viewport { inset: 0 300px 34px 0; }
+  </style>
+</head>
+<body>
+  <!-- same DOM skeleton as index.html so the real main.js can run unchanged -->
+  <div id="viewport"><div id="labels"></div><div id="hud">init</div></div>
+  <aside id="legend"></aside>
+  <section id="panel">
+    <header id="panel-header"><span>Controls</span><button type="button" id="panel-toggle">–</button></header>
+    <div id="panel-body"></div>
+    <div id="log"></div>
+  </section>
+  <footer id="status">starting …</footer>
+  <div id="loading"><div class="spinner"></div><div id="loading-text">loading …</div></div>
+  <pre id="result">pending</pre>
+
+  <script>
+    // capture everything the app logs or throws
+    window.__errors = [];
+    window.__logs = [];
+    const origError = console.error.bind(console);
+    console.error = (...a) => { window.__errors.push(a.map(String).join(' ')); origError(...a); };
+    const origWarn = console.warn.bind(console);
+    console.warn = (...a) => { window.__errors.push('WARN ' + a.map(String).join(' ')); origWarn(...a); };
+    const origLog = console.log.bind(console);
+    console.log = (...a) => { window.__logs.push(a.map(String).join(' ')); origLog(...a); };
+    window.addEventListener('error', (e) => window.__errors.push('window.onerror: ' + e.message));
+    window.addEventListener('unhandledrejection', (e) => window.__errors.push('unhandled: ' + e.reason));
+  </script>
+
+  <script type="module">
+    // the harness lives in tools/, so point CONFIG at the CSV one level up.
+    // (config.js is imported first; main.js then sees the updated value.)
+    import { CONFIG } from '../js/config.js';
+    CONFIG.DATA_PATH = '../data/umap3d_celltype.csv';
+    await import('../js/main.js');
+
+    const report = () => {
+      const legendRows = document.querySelectorAll('#legend .legend-item').length;
+      const labels = document.querySelectorAll('#labels .cell-label').length;
+      const surfaces = document.querySelectorAll('canvas').length;
+      const loadingHidden = document.getElementById('loading').classList.contains('hidden');
+      const hud = document.getElementById('hud').textContent;
+      const status = document.getElementById('status').textContent;
+      const log = [...document.querySelectorAll('#log div')].map((d) => d.textContent).slice(-8);
+      const out = {
+        legendRows, labels, canvases: surfaces, loadingHidden, hud, status,
+        logTail: log, errors: window.__errors, consoleLines: window.__logs.length
+      };
+      document.getElementById('result').textContent = 'SMOKE ' + JSON.stringify(out, null, 1);
+      document.title = window.__errors.length === 0 && legendRows === 8 ? 'SMOKE-OK' : 'SMOKE-FAIL';
+    };
+    setTimeout(report, 9000);
+  </script>
+</body>
+</html>
