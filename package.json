@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Interactive 3D UMAP viewer (CellMajortype only) - Three.js r160 + UnrealBloom, no build step.",
+  "description": "Interactive 3D skin aging atlas: 434 RNA genes, 37 metadata fields, traceable exports",
   "scripts": {
     "start": "python3 -m http.server 8000",
     "test:data": "node tools/test_data.mjs",
-    "test:surface": "node tools/test_surface.mjs"
+    "test:surface": "node tools/test_surface.mjs",
+    "test:review": "node tools/test_review.mjs"
   }
 }

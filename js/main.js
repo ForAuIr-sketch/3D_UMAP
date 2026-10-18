@@ -5,11 +5,12 @@
  *            -> ShaderMaterial (soft sprites) -> EffectComposer + UnrealBloom
  *            -> optional per-type density shells (surface.js)
  *
- * Only the three UMAP coordinates and CellMajortype are used.
- * BMP1 / BMP1_display / any other column is never read.
+ * Original coordinates and annotations are preserved. RNA expression is loaded
+ * per gene; all original Seurat metadata can be inspected and used for color.
  * ========================================================================== */
 
 import * as THREE from 'three';
+import {decodeExpression, numericStats, categoryData, expressionRange} from './review-data.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -51,6 +52,7 @@ const state = {
   colorBy: CONFIG.COLOR_BY,          // 'cellType' | 'ecmAuc' | 'senCidScore' | 'senCidBinary' | 'gene'
   selectedGeneField: null,           // exact CSV header of the selected gene
   selectedGeneName: CONFIG.GENE_FIELD,
+  manifest: null, geneValues: new Map(), geneRequest: 0, metadataField: 'age_group', scaleMode: 'percentile',
   featureCache: new Map(),           // field -> { values, min, max, q02, q98, invalidCount }
   colormapCache: null,               // { white: bool, stops: THREE.Color[] }
   lastColorInfo: null                // what the points are currently coloured by
@@ -73,8 +75,10 @@ async function init() {
   createComposer();
 
   setStatus('loading CSV …');
-  const text = await loadText(CONFIG.DATA_PATH);
+  const [text, manifestText] = await Promise.all([loadText(CONFIG.DATA_PATH), loadText('data/manifest.json')]);
+  state.manifest = JSON.parse(manifestText);
   state.parsed = parseUMAPCsv(text, CONFIG);
+  if (state.parsed.n !== state.manifest.cells) throw new Error('Manifest / cell count mismatch');
   logInfo(`parsed ${state.parsed.n} cells, ${state.parsed.types.length} CellMajortype groups`);
   logInfo(`columns -> x:${state.parsed.columnNames.x} y:${state.parsed.columnNames.y} ` +
           `z:${state.parsed.columnNames.z} group:${state.parsed.columnNames.group}`);
@@ -86,10 +90,11 @@ async function init() {
   buildControlPanel();
   // apply the requested colour-by mode (URL / config) before the first frame
   if (state.colorBy === 'gene') {
-    if (state.pendingGene) applyGeneSearch(state.pendingGene);
-    else if (state.selectedGeneName) applyGeneSearch(state.selectedGeneName);
+    if (state.pendingGene) await applyGeneSearch(state.pendingGene);
+    else if (state.selectedGeneName) await applyGeneSearch(state.selectedGeneName);
   }
   applyColorBy(state.colorBy, { silent: true });
+  installReviewControls();
   frameCamera();
 
   dom.loading.classList.add('hidden');
@@ -148,7 +153,9 @@ function applyUrlParams() {
   const bghex = q.get('bgcolor');           // optional dark-colour override, e.g. ?bgcolor=0A0E1C
   if (bghex && /^[0-9a-fA-F]{6}$/.test(bghex)) CONFIG.BACKGROUND_COLOR = '#' + bghex;
   const cb = q.get('colorby');              // cellType | ecmAuc | senCidScore | senCidBinary | gene
-  if (cb && ['cellType', 'ecmAuc', 'senCidScore', 'senCidBinary', 'gene'].includes(cb)) state.colorBy = cb;
+  if (cb && ['cellType', 'ecmAuc', 'senCidScore', 'senCidBinary', 'gene', 'metadata'].includes(cb)) state.colorBy = cb;
+  if (q.get('field')) state.metadataField = q.get('field');
+  if (q.get('scale') === 'full') state.scaleMode = 'full';
   const gene = q.get('gene');               // gene name for ?colorby=gene
   if (gene) { state.pendingGene = gene; state.selectedGeneName = gene; }
 }
@@ -236,57 +243,39 @@ function refreshPointColors() {
  * ======================================================================== */
 
 /** Headers that can be used as a gene: every CSV column except the annotations. */
-function geneColumns() {
-  const skip = new Set(CONFIG.GENE_EXCLUDE_FIELDS.map((h) => String(h).trim().toLowerCase()));
-  return state.parsed.headers.filter((h) => !skip.has(String(h).trim().toLowerCase()));
-}
+function geneColumns() { return Object.keys(state.manifest?.genes ?? {}); }
 
 /** Case-insensitive lookup of an exact CSV header. */
 function findCsvColumn(name) {
   if (name === null || name === undefined) return null;
   const target = String(name).trim().toLowerCase();
   if (!target) return null;
-  const hit = state.parsed.headers.find((h) => String(h).trim().toLowerCase() === target);
+  const hit = [...geneColumns(), ...state.parsed.headers].find((h) => String(h).trim().toLowerCase() === target);
   return hit ?? null;
 }
 
 /** Read one numeric column for every cell (computed once, then cached). */
 function featureValues(field) {
   if (state.featureCache.has(field)) return state.featureCache.get(field);
-  const n = state.parsed.n;
-  const rows = state.parsed.rows;
-  const values = new Float32Array(n);
-  const valid = [];
-  let invalidCount = 0;
-  for (let i = 0; i < n; i++) {
-    const row = rows[i];
-    const raw = row ? row[field] : undefined;
-    const v = (raw === '' || raw === null || raw === undefined) ? NaN : Number(raw);
-    if (Number.isFinite(v)) {
-      values[i] = v;
-      valid.push(v);
-    } else {
-      values[i] = 0;          // '' / null / undefined / NaN / Infinity -> 0
-      invalidCount++;
-    }
-  }
-  valid.sort((a, b) => a - b);
-  const pick = (p) => (valid.length
-    ? valid[Math.min(valid.length - 1, Math.max(0, Math.round(p * (valid.length - 1))))]
-    : 0);
-  const stats = {
-    field,
-    values,
-    n: valid.length,
-    min: valid.length ? valid[0] : 0,
-    max: valid.length ? valid[valid.length - 1] : 0,
-    q02: pick(CONFIG.OUTLIER_PERCENTILES[0]),
-    q98: pick(CONFIG.OUTLIER_PERCENTILES[1]),
-    invalidCount,
-    zeroCount: (() => { let z = 0; for (let i = 0; i < n; i++) if (values[i] === 0) z++; return z; })()
-  };
+  const raw = state.geneValues.get(field) ?? state.parsed.rows.map(row => row[field]);
+  const stats = numericStats(field, raw);
   state.featureCache.set(field, stats);
   return stats;
+}
+function displayRange(stats) {
+  return expressionRange(stats,state.scaleMode);
+}
+function metadataColorArray(field) {
+  const schema = state.manifest.metadata.find(m => m.name === field);
+  if (!schema) return {colors:typeColorArray(),field:null,kind:'cellType'};
+  if (schema.type === 'numeric') return {colors:featureColorArray(featureValues(field)),field,kind:'continuous'};
+  const cat = categoryData(state.parsed.rows,field);
+  const palette = cat.labels.map((label,i) => label === '(missing)' ? new THREE.Color('#777777') : new THREE.Color().setHSL((i*.61803398875)%1,.62,state.bgMode==='white'?.38:.6));
+  const index=new Map(cat.labels.map((label,i)=>[label,i]));
+  const colors=new Float32Array(state.parsed.n*3);
+  cat.values.forEach((value,i)=>palette[index.get(value)].toArray(colors,i*3));
+  state.metadataCategories={...cat,palette};
+  return {colors,field,kind:'categorical'};
 }
 
 /** Colormap stops as THREE.Color (working/linear space), adapted per background. */
@@ -329,13 +318,15 @@ function featureColorArray(stats) {
   const n = state.parsed.n;
   const out = new Float32Array(n * 3);
   const stops = colormapStops();
-  const span = stats.q98 - stats.q02;
+  const [rangeLow, rangeHigh] = displayRange(stats);
+  const span = rangeHigh - rangeLow;
   for (let i = 0; i < n; i++) {
+    if (!Number.isFinite(stats.values[i])) { out.set([.25,.25,.25], i*3); continue; }
     let t = 0;
     if (span > 1e-12) {
-      const v = Math.min(stats.q98, Math.max(stats.q02, stats.values[i]));
-      t = (v - stats.q02) / span;
-    } else if (stats.values[i] > stats.q02) {
+      const v = Math.min(rangeHigh, Math.max(rangeLow, stats.values[i]));
+      t = (v - rangeLow) / span;
+    } else if (stats.values[i] > rangeLow) {
       t = 1;
     }
     sampleColormapInto(t, stops);
@@ -358,13 +349,18 @@ function typeColorArray() {
 /** The single dispatch used by refreshPointColors(). */
 function computeColorArray() {
   const by = state.colorBy;
+  if (by === 'metadata') return metadataColorArray(state.metadataField);
   if (by === 'ecmAuc' || by === 'senCidScore') {
     const field = CONFIG.FEATURE_FIELDS[by];
     return { colors: featureColorArray(featureValues(field)), field, kind: 'continuous' };
   }
   if (by === 'senCidBinary') {
     const field = CONFIG.FEATURE_FIELDS.senCidBinary;
-    return { colors: featureColorArray(featureValues(field)), field, kind: 'binary' };
+    const cat = categoryData(state.parsed.rows,field);
+    state.metadataCategories={...cat,palette:cat.labels.map((_,i)=>new THREE.Color(i?'#FDE725':'#440154'))};
+    const colors=new Float32Array(state.parsed.n*3);
+    cat.values.forEach((v,i)=>state.metadataCategories.palette[cat.labels.indexOf(v)].toArray(colors,i*3));
+    return { colors, field, kind: 'categorical' };
   }
   if (by === 'gene' && state.selectedGeneField) {
     const field = state.selectedGeneField;
@@ -375,9 +371,10 @@ function computeColorArray() {
 
 /** Switch the colour-by mode (points only). */
 function applyColorBy(mode, { silent = false } = {}) {
-  const allowed = ['cellType', 'ecmAuc', 'senCidScore', 'senCidBinary', 'gene'];
+  const allowed = ['cellType', 'ecmAuc', 'senCidScore', 'senCidBinary', 'gene', 'metadata'];
   state.colorBy = allowed.includes(mode) ? mode : 'cellType';
   document.body.classList.toggle('color-by-gene', state.colorBy === 'gene');
+  document.body.classList.toggle('color-by-metadata', state.colorBy === 'metadata');
   const sel = document.getElementById('colorby-select');
   if (sel) sel.value = state.colorBy;
   refreshPointColors();
@@ -388,7 +385,8 @@ function applyColorBy(mode, { silent = false } = {}) {
 }
 
 /** Gene search: case-insensitive lookup in the CSV header, no whitelist. */
-function applyGeneSearch(rawName) {
+async function applyGeneSearch(rawName) {
+  const request = ++state.geneRequest;
   const name = String(rawName ?? '').trim();
   if (!name) {
     setGeneStatus('Enter a gene name.', 'warn');
@@ -400,9 +398,21 @@ function applyGeneSearch(rawName) {
     setGeneStatus(`Gene "${name}" was not found in the dataset.`, 'error');
     return false;
   }
+  try {
+    setGeneStatus(`Loading ${header} …`);
+    if (!state.geneValues.has(header)) {
+      const res=await fetch(state.manifest.genes[header].file);
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data=decodeExpression(await res.arrayBuffer(),state.parsed.n);
+      // Keep at most 12 genes in memory; switching genes never loads the full panel.
+      if(state.geneValues.size>=12) {const first=state.geneValues.keys().next().value;state.geneValues.delete(first);state.featureCache.delete(first);}
+      state.geneValues.set(header,data);
+    }
+    if(request!==state.geneRequest)return false;
+  } catch(err) { if(request===state.geneRequest)setGeneStatus(`Could not load ${header}: ${err.message}`, 'error');return false; }
   state.selectedGeneField = header;
   state.selectedGeneName = header;
-  setGeneStatus(`Gene expression: ${header}`, 'ok');
+  setGeneStatus(`RNA expression: ${header}`, 'ok');
   if (state.colorBy === 'gene') refreshPointColors();
   logInfo(`gene search: ${name} -> ${header} (${featureValues(header).zeroCount} cells with 0)`);
   return true;
@@ -812,6 +822,8 @@ function updateLegendForColorBy() {
     return v.toExponential(1);
   };
 
+  const oldCategoryBox=document.getElementById('metadata-legend');
+  if(oldCategoryBox)oldCategoryBox.replaceChildren();
   if (info.kind === 'cellType' || !info.field) {
     bar.classList.remove('visible');
     title.textContent = 'Cell type';
@@ -819,6 +831,17 @@ function updateLegendForColorBy() {
     return;
   }
 
+  const categoryBox=document.getElementById('metadata-legend');
+  if(categoryBox)categoryBox.replaceChildren();
+  if(info.kind==='categorical') {
+    bar.classList.remove('visible');title.textContent=info.field;sub.style.display='block';sub.textContent='CellMajortype (labels & surfaces)';
+    if(categoryBox)for(let i=0;i<state.metadataCategories.labels.length;i++) {
+      const label=state.metadataCategories.labels[i], item=document.createElement('div');item.className='metadata-category';
+      const swatch=document.createElement('i');swatch.style.background='#'+state.metadataCategories.palette[i].getHexString(THREE.SRGBColorSpace);
+      item.append(swatch,document.createTextNode(`${label} · ${state.metadataCategories.counts.get(label).toLocaleString()}`));categoryBox.append(item);
+    }
+    return;
+  }
   const stats = featureValues(info.field);
   bar.classList.add('visible');
   sub.style.display = 'block';
@@ -839,11 +862,11 @@ function updateLegendForColorBy() {
     high.textContent = '1';
     note.textContent = `binary · ${stats.zeroCount.toLocaleString()} cells = 0`;
   } else {
-    low.textContent = fmt(stats.q02);
-    high.textContent = fmt(stats.q98);
+    low.textContent = fmt(displayRange(stats)[0]);
+    high.textContent = fmt(displayRange(stats)[1]);
     const zeroPct = stats.n ? (100 * stats.zeroCount / stats.n) : 0;
     note.textContent = `${stats.zeroCount.toLocaleString()} cells = 0 (${zeroPct.toFixed(1)}%) · ` +
-                       `clip ${fmt(stats.q02)} … ${fmt(stats.q98)}`;
+                       `${state.scaleMode === 'full' || stats.q98-stats.q02<=1e-12 ? 'full range' : '2–98% clip'} ${fmt(displayRange(stats)[0])} … ${fmt(displayRange(stats)[1])} · ${stats.invalidCount} missing`;
   }
 }
 
@@ -929,11 +952,12 @@ function buildControlPanel() {
       <option value="senCidScore">SenCID_score</option>
       <option value="senCidBinary">SenCID_binary</option>
       <option value="gene">Gene expression</option>
+      <option value="metadata">Metadata</option>
     </select>`;
   dom.panelBody.appendChild(colorByRow);
   const colorBySel = colorByRow.querySelector('select');
   colorBySel.value = state.colorBy;
-  colorBySel.addEventListener('change', (e) => applyColorBy(e.target.value));
+  colorBySel.addEventListener('change', async (e) => { const mode=e.target.value;if(mode!=='gene'){state.geneRequest++;applyColorBy(mode);}else{applyColorBy(mode);await applyGeneSearch(document.getElementById('gene-input').value);} });
 
   const geneRow = document.createElement('div');
   geneRow.className = 'control control-gene only-gene';
@@ -947,13 +971,13 @@ function buildControlPanel() {
     <datalist id="gene-list">${geneColumns().map((g) => `<option value="${g}"></option>`).join('')}</datalist>`;
   dom.panelBody.appendChild(geneRow);
   const geneInput = geneRow.querySelector('#gene-input');
-  geneRow.querySelector('#gene-apply').addEventListener('click', () => {
-    if (applyGeneSearch(geneInput.value)) applyColorBy('gene');
+  geneRow.querySelector('#gene-apply').addEventListener('click', async () => {
+    if (await applyGeneSearch(geneInput.value)) applyColorBy('gene');
   });
-  geneInput.addEventListener('keydown', (e) => {
+  geneInput.addEventListener('keydown', async (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (applyGeneSearch(geneInput.value)) applyColorBy('gene');
+      if (await applyGeneSearch(geneInput.value)) applyColorBy('gene');
     }
   });
 
@@ -1298,7 +1322,7 @@ window.__APP_DEBUG = () => {
   };
   const info = state.lastColorInfo;
   const featureStats = (() => {
-    if (!info || !info.field) return null;
+    if (!info || !info.field || info.kind==='categorical') return null;
     const st = featureValues(info.field);
     return { field: st.field, q02: st.q02, q98: st.q98, min: st.min, max: st.max,
              invalidCount: st.invalidCount, zeroCount: st.zeroCount,
@@ -1311,6 +1335,7 @@ window.__APP_DEBUG = () => {
     bgMode: state.bgMode,
     colorBy: state.colorBy,
     selectedGene: state.selectedGeneField,
+    geneCount: geneColumns().length, metadataCount: state.manifest.metadata.length, metadataField:state.metadataField, scaleMode:state.scaleMode,
     lastColorInfo: info,
     featureStats,
     positionChecksum: sum(pts && pts.geometry.getAttribute('position'), 97),
@@ -1442,6 +1467,7 @@ async function exportPNG(scale) {
 
   if (state.includeLabelsInExport && CONFIG.SHOW_LABELS) drawLabelsToCanvas(ctx, w, h, pr);
 
+  drawReviewLegend(ctx, w, h, pr);
   const url = out.toDataURL('image/png');
   // diagnostics for automated checks (corner colours prove the real background)
   const px = (x, y) => Array.from(ctx.getImageData(x, y, 1, 1).data.slice(0, 3));
@@ -1457,7 +1483,7 @@ async function exportPNG(scale) {
   const a = document.createElement('a');
   const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   a.href = url;
-  a.download = `umap3d_cellmajortype_${scale}x_${stamp}.png`;
+  a.download = `umap3d_${String(state.lastColorInfo?.field || 'CellMajortype').replace(/[^a-zA-Z0-9_-]/g,'_')}_${scale}x_${stamp}.png`;
   a.click();
 
   // restore everything exactly as it was
@@ -1575,4 +1601,89 @@ function showFatal(err) {
       <small>Serve the folder over HTTP (python3 -m http.server 8000) - opening index.html
       directly with file:// blocks CSV loading.</small></div>`;
   }
+}
+
+function installReviewControls() {
+  const metadataLegend=document.createElement('div');metadataLegend.id='metadata-legend';
+  dom.legend.insertBefore(metadataLegend,document.getElementById('legend-subtitle'));
+  const block=document.createElement('div');block.className='review-controls';
+  block.innerHTML=`
+    <div class="only-gene"><label class="control-label" for="marker-panel">Marker / ECM panel</label><select id="marker-panel"><option value="">All genes</option></select><select id="panel-gene"><option value="">Choose a gene …</option></select></div>
+    <div class="only-metadata"><label class="control-label" for="metadata-field">Metadata field</label><select id="metadata-field"></select><div id="metadata-detail" class="review-note"></div></div>
+    <label class="control-label" for="expression-scale">Continuous color scale</label><select id="expression-scale"><option value="percentile">2–98% percentile clip</option><option value="full">Full data range</option></select>
+    <div class="review-note">RNA expression · zeros retained · missing metadata shown in gray. Color scales are specific to the selected feature.</div>
+    <button id="export-view" type="button">Save view & data provenance</button>
+    <details class="dataset-details"><summary>Dataset & downloads</summary><div id="dataset-summary"></div><a href="data/metadata_all.csv" download>Download all metadata (CSV)</a><a href="data/gene_inventory.csv" download>Download gene inventory (CSV)</a><a href="data/manifest.json" download>Download provenance (JSON)</a><button id="export-expression" type="button">Download selected gene (CSV)</button><p class="annotation-note">Annotation check: original “Mast cells” labels are retained. This group shows melanocyte-marker expression; review before publication.</p></details>
+    <details id="cell-inspector"><summary>Inspect a cell</summary><p class="review-note">Click a point to inspect all metadata and the active gene.</p><div id="cell-metadata"></div></details>`;
+  const geneControl=document.querySelector('.control-gene');geneControl.after(block);
+  const panel=block.querySelector('#marker-panel'),selectGene=block.querySelector('#panel-gene');
+  for(const name of Object.keys(state.manifest.panels))panel.add(new Option(name,name));
+  function updatePanel(){selectGene.replaceChildren(new Option('Choose a gene …',''));for(const g of panel.value?state.manifest.panels[panel.value]:geneColumns())selectGene.add(new Option(g,g));}
+  panel.addEventListener('change',updatePanel);updatePanel();
+  selectGene.addEventListener('change',async()=>{if(!selectGene.value)return;document.getElementById('gene-input').value=selectGene.value;if(await applyGeneSearch(selectGene.value))applyColorBy('gene');});
+  const metadata=block.querySelector('#metadata-field');
+  for(const schema of state.manifest.metadata)metadata.add(new Option(`${schema.name} · ${schema.type}`,schema.name));
+  if(!state.manifest.metadata.some(m=>m.name===state.metadataField))state.metadataField=state.manifest.metadata[0].name;
+  metadata.value=state.metadataField;
+  function updateMetadata(){state.metadataField=metadata.value;const schema=state.manifest.metadata.find(m=>m.name===metadata.value);block.querySelector('#metadata-detail').textContent=`${schema.unique_count} distinct values · ${schema.missing_count} missing`;if(state.colorBy==='metadata')refreshPointColors();}
+  metadata.addEventListener('change',updateMetadata);updateMetadata();
+  const scale=block.querySelector('#expression-scale');scale.value=state.scaleMode;scale.addEventListener('change',()=>{state.scaleMode=scale.value;refreshPointColors();});
+  block.querySelector('#dataset-summary').textContent=`${state.parsed.n.toLocaleString()} cells · ${geneColumns().length} genes · ${state.manifest.metadata.length} metadata fields. Source: ${state.manifest.source.file}; RNA / data. Original UMAP coordinates and cell IDs are preserved.`;
+  block.querySelector('#export-view').addEventListener('click',()=>{
+    const info=state.lastColorInfo;const stats=info?.field&&info.kind!=='categorical'?featureValues(info.field):null;
+    const view={timestamp:new Date().toISOString(),source:state.manifest.source,cells:state.parsed.n,availableGenes:geneColumns().length,metadataFields:state.manifest.metadata.length,
+      colorBy:state.colorBy,gene:state.selectedGeneField,metadataField:state.metadataField,scaleMode:state.scaleMode,
+      colorRange:stats?displayRange(stats):null,featureStats:stats?{min:stats.min,max:stats.max,q02:stats.q02,q98:stats.q98,zeroCount:stats.zeroCount,missingCount:stats.invalidCount}:null,
+      camera:state.camera.position.toArray(),target:state.controls.target.toArray(),background:state.bgMode,preset:state.preset,
+      controls:Array.from(document.querySelectorAll('#panel input,#panel select')).map(e=>({id:e.id,value:e.value,checked:e.type==='checkbox'?e.checked:undefined})),
+      annotation:state.manifest.source.annotation_note};
+    downloadData('umap_view_provenance.json',JSON.stringify(view,null,2),'application/json');
+  });
+  block.querySelector('#export-expression').addEventListener('click',()=>{
+    const g=state.selectedGeneField;if(!g||!state.geneValues.has(g)){setGeneStatus('Select and apply a gene first.','warn');return;}
+    const values=featureValues(g).values;const lines=['cell_id,CellMajortype,'+csvField(g)];
+    state.parsed.rows.forEach((row,i)=>lines.push([row.cell_id,row.CellMajortype,values[i]].map(csvField).join(',')));
+    downloadData(g+'_RNA_expression.csv',lines.join('\n'),'text/csv');
+  });
+  let down=null;
+  dom.container.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY];});
+  dom.container.addEventListener('pointerup',e=>{
+    if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>4)return;
+    const rect=state.renderer.domElement.getBoundingClientRect(),mouse=new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);
+    const ray=new THREE.Raycaster();ray.params.Points.threshold=.1;ray.setFromCamera(mouse,state.camera);
+    const hit=ray.intersectObject(state.points)[0];if(!hit)return;
+    const i=hit.index,row=state.parsed.rows[i],box=document.getElementById('cell-metadata');box.replaceChildren();
+    const entries=[['cell_id',row.cell_id],...state.manifest.metadata.map(m=>[m.name,row[m.name]??''])];
+    if(state.selectedGeneField&&state.geneValues.has(state.selectedGeneField))entries.push([state.selectedGeneField+' (RNA)',featureValues(state.selectedGeneField).values[i]]);
+    for(const [key,value]of entries){const r=document.createElement('div'),label=document.createElement('strong');label.textContent=key+': ';r.append(label,document.createTextNode(value===''?'(missing)':String(value)));box.append(r);}
+    document.getElementById('cell-inspector').open=true;
+  });
+  updateLegendForColorBy();
+}
+function csvField(value){return '"'+String(value??'').replaceAll('"','""')+'"';}
+function downloadData(filename,text,type){const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+
+function drawReviewLegend(ctx,w,h,pr) {
+  const info=state.lastColorInfo;if(!info?.field)return;
+  ctx.save();ctx.scale(pr,pr);
+  const light=state.bgMode==='white',text=light?'#151922':'#F5F7FA';
+  const x=20,y=24;
+  if(info.kind==='categorical') {
+    const cat=state.metadataCategories;const rows=Math.min(12,cat.labels.length),columns=Math.ceil(cat.labels.length/rows);
+    const cellWidth=190;
+    ctx.fillStyle=light?'rgba(255,255,255,.92)':'rgba(9,13,25,.9)';ctx.fillRect(x-8,y-15,Math.min(w-35,columns*cellWidth+15),48+rows*18);
+    ctx.fillStyle=text;ctx.font='bold 14px Arial';ctx.fillText(info.field,x,y);
+    ctx.font='11px Arial';
+    cat.labels.forEach((label,i)=>{const xx=x+Math.floor(i/rows)*cellWidth,yy=y+24+(i%rows)*18;ctx.fillStyle='#'+cat.palette[i].getHexString(THREE.SRGBColorSpace);ctx.fillRect(xx,yy-8,9,9);ctx.fillStyle=text;ctx.fillText(label+' (n='+cat.counts.get(label)+')',xx+15,yy,cellWidth-20);});
+  } else {
+    const stats=featureValues(info.field),range=displayRange(stats);
+    ctx.fillStyle=light?'rgba(255,255,255,.92)':'rgba(9,13,25,.9)';ctx.fillRect(x-8,y-15,285,105);
+    ctx.fillStyle=text;ctx.font='bold 14px Arial';ctx.fillText(info.field+(state.colorBy==='gene'?' | RNA/data':''),x,y);
+    const grad=ctx.createLinearGradient(x,0,x+250,0);colormapStops().forEach((color,i,all)=>grad.addColorStop(i/(all.length-1),'#'+color.getHexString(THREE.SRGBColorSpace)));
+    ctx.fillStyle=grad;ctx.fillRect(x,y+12,250,12);ctx.fillStyle=text;ctx.font='11px Arial';
+    const fmt=v=>Number(v.toPrecision(4)).toString();ctx.fillText(fmt(range[0]),x,y+40);ctx.textAlign='right';ctx.fillText(fmt(range[1]),x+250,y+40);ctx.textAlign='left';
+    ctx.fillText((state.scaleMode==='full'||stats.q98-stats.q02<=1e-12?'Full range':'2–98% percentile clip')+'; zero '+(100*stats.zeroCount/state.parsed.n).toFixed(1)+'%',x,y+59);
+    ctx.fillText('n = '+state.parsed.n.toLocaleString()+'; missing = '+stats.invalidCount,x,y+76);
+  }
+  ctx.restore();
 }

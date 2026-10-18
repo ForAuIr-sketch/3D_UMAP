@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { parseUMAPCsv, computeLabelAnchors, computePointDensity } from '../js/data.js';
 import { CONFIG } from '../js/config.js';
 
-const path = process.argv[2] ?? '/Users/biefan/Desktop/aging/3D_UMAP/data/umap3d_multifeature.csv';
+const path = process.argv[2] ?? new URL('../data/cells_metadata.csv', import.meta.url);
 const text = readFileSync(path, 'utf8');
 console.log('file           :', path);
 console.log('bytes          :', text.length);

@@ -540,3 +540,27 @@ body.bg-white .gene-status.ok { color: #0f766e; }
 body.bg-white .gene-status.error { color: #b91c1c; }
 body.bg-white .gene-status.warn { color: #92400e; }
 body.bg-white .colorbar-bar { border-color: rgba(17, 24, 39, 0.18); }
+/* Review controls follow the viewer's existing compact visual language. */
+.review-controls {display:block;margin:8px 0 14px;padding-bottom:12px;border-bottom:1px solid #ffffff20;}
+.review-controls select {box-sizing:border-box;width:100%;min-height:30px;margin:3px 0 5px;padding:5px;color:var(--text,#d9e1ee);background:#1a1f2b;border:1px solid #394052;border-radius:5px;}
+.review-controls button {width:100%;padding:7px;margin:3px 0;color:#c7eeea;background:#183137;border:1px solid #30636a;border-radius:5px;cursor:pointer;}
+.review-note {font-size:10px;line-height:1.5;color:#94a4bd;}
+.only-metadata {display:none;}.color-by-metadata .only-metadata {display:block;}
+.only-gene {display:none;}.color-by-gene .only-gene {display:block;}
+.dataset-details,#cell-inspector {font-size:11px;line-height:1.6;overflow-wrap:anywhere;}
+.dataset-details summary,#cell-inspector summary {cursor:pointer;padding:5px 0;color:#c7d2e8;}
+.dataset-details a {display:block;color:#70dcd0;margin:7px 0;}
+.annotation-note {color:#e9bd79;font-size:10px;line-height:1.5;}
+#cell-metadata {max-height:310px;overflow:auto;font-size:10px;}
+#cell-metadata>div {padding:3px 0;border-bottom:1px solid #ffffff12;}
+#metadata-legend {max-height:250px;overflow:auto;font-size:11px;}
+.metadata-category {display:flex;gap:8px;align-items:center;padding:3px 0;}
+.metadata-category i {display:inline-block;flex:none;width:9px;height:9px;border-radius:50%;}
+
+.review-controls .control-label {display:block;grid-area:auto;margin-top:8px;font-size:11px;}
+.review-controls>div,.review-controls>details,.review-controls>.review-note {margin-bottom:8px;}
+body.bg-white .review-controls select {background:#f4f6f8;color:#111827;}
+body.bg-white .review-controls button {background:#e6f4f1;color:#155e59;}
+body.bg-white .review-note {color:#4b5563;}
+body.bg-white .dataset-details summary,body.bg-white #cell-inspector summary {color:#374151;}
+body.bg-white .annotation-note {color:#8c5100;}

@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "cells": 68646,
+  "metadata": 37,
+  "genes": 434,
+  "required": 16,
+  "checks": [
+    "unique cell IDs",
+    "all metadata columns",
+    "all binary lengths",
+    "all SHA256 hashes",
+    "all expression non-negative and finite",
+    "all zero counts",
+    "missing numeric values remain missing",
+    "categorical missing values explicit"
+  ]
+}

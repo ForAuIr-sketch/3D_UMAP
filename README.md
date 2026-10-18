@@ -1,414 +1,80 @@
-# 3D UMAP viewer — CellMajortype
+# 3D UMAP — skin aging expression atlas
 
-Interactive 3D point-cloud viewer for the single-cell UMAP (`scRNA_merged_3DUMAP.rds`).
-Every cell is one glowing point, coloured by **CellMajortype** only.
-`BMP1`, `BMP1_display`, age group and all other annotations are deliberately ignored.
+本版本沿用原项目 Three.js 3D UMAP、密度表面、细胞标签、旋转缩放、深/黑/白背景和高清导出，扩充用于论文和审稿交流的数据查询功能。
 
-```
-3D_UMAP/
-├── index.html                  page shell + import map (Three.js r160)
-├── css/style.css               dark layout, legend, panel, labels
-├── data/umap3d_celltype.csv    original data (read-only, never modified)
-├── js/
-│   ├── config.js               ALL visual parameters (edit here)
-│   ├── data.js                 CSV parsing, column detection, label anchors, density
-│   ├── shaders.js              GLSL: soft round point sprites + shell rim glow
-│   ├── surface.js              density field + marching-tetrahedra isosurface
-│   ├── main.js                 scene, camera, bloom, UI wiring, PNG export
-│   └── vendor/three/           Three.js r160 (bundled, works offline)
-├── tools/                      Node tests (no browser needed)
-├── data_check.txt              data audit: columns, counts, ranges, QC
-└── README.md
+- **68,646 cells；37 个原始 metadata 字段；434 个基因。**
+- 表达量来自 `scRNA_merged_3DUMAP.rds` 的 `RNA` assay / `data` layer，未重新归一化或替换为 integrated / scale.data。
+- 所有细胞以 `cell_id` 精确对齐；原 UMAP CSV 已与 RDS 的 `umap3d` embedding 逐项核对。
+- 细胞原注释、坐标和顺序保留。基因按需加载，每个 Float32 文件约 275 KB，缓存最多 12 个基因。
+- 数据目录含 283 个原网页 ECM panel 基因，并加入各类细胞及其他常用 marker；重叠基因只存储一次。精确数量以 manifest 为准。
+
+## 打开
+
+Mac：双击 `打开3D_UMAP.command`，保持终端窗口开启。需要 Python 3。若系统没有直接执行脚本，可在该文件夹中运行：
+
+```sh
+python3 tools/serve.py
 ```
 
----
+也可通过任意静态 HTTP 服务发布整个文件夹。不能只双击 index.html：浏览器的本地文件限制会阻止数据加载。Three.js 已随文件附带，运行时不依赖外部 CDN。
 
-## 1. How to start
+本交付物是本地版，没有更新现有 GitHub Pages。要分享审稿链接，应将本版本整套文件放到期刊允许的静态网站或数据仓库，并确定 metadata 的分享范围。
 
-The page must be served over HTTP (`file://` blocks the CSV fetch):
+## 操作
 
-```bash
-cd ~/Desktop/aging/3D_UMAP
-python3 -m http.server 8000
+1. `Color by → Gene expression`：输入完整基因符号后 Apply，支持大小写不敏感匹配和自动补全。例如 CD3D、PECAM1；“CD”是前缀，不能作为完整基因名。
+2. `Marker / ECM panel`：按细胞类型、ECM、衰老/增殖等分组快速选基因。分组是查询列表，不代表重新注释，也不保证每个 marker 都具有唯一细胞特异性。
+3. `Color by → Metadata`：37 个原字段均可查看和着色。数值字段用连续色标；分类字段用分类颜色和计数。缺失值保留为缺失并显示灰色，不会被当作零。
+4. `Inspect a cell`：点击图中的点，展开其 cell_id、全部 metadata 和当前已加载基因表达量。拖动时不会触发单击选点。
+5. `Continuous color scale`：默认按所选字段的全体细胞 2–98% 分位裁剪，可切换 Full data range。色标不是不同基因间的共同表达尺度；若稀疏基因的 2% 和 98% 分位相同，自动采用全范围并在色标说明中显示 full range，避免零宽色标。
+6. `Export 2× / 4× PNG`：导出当前视图，基因/metadata 视图附所选字段名、色标及范围信息。实际分辨率取决于窗口大小及显卡限制，状态栏显示真实导出尺寸。
+7. `Save view & data provenance`：导出相机、配色、显示范围、界面参数和数据来源 JSON。该文件用于记录参数，本版本未提供一键导入恢复。
+8. `Dataset & downloads`：下载全部 metadata、基因目录、数据来源 JSON、当前基因的逐细胞表达 CSV。
+
+查询也可写在 URL，例如：
+
+```text
+?colorby=gene&gene=PECAM1
+?colorby=gene&gene=CCL21&scale=full
+?colorby=metadata&field=age_group
 ```
 
-Leave the terminal open. Stop it with `Ctrl-C`.
+## 数据来源与解释
 
-## 2. Address
+- `data/metadata_all.csv`：RDS 的全部 37 个 metadata 列，另加行名 cell_id；字段 R 类型、分类水平和缺失计数记录在 manifest。
+- `data/cells_metadata.csv`：metadata + 原 3D 坐标 + 旧网页的派生字段。
+- 原网页 `Age_group`、`ECM_AUC`、`SenCID_score`、`SenCID_binary` 从原 `umap3d_multifeature.csv` 按 cell_id 保留；本次未重算，也未混同为 RDS metadata 中同名近似字段。原始 `age_group` 和六套 `SenCID_Score01–06` 等仍单独保留。
+- `data/genes/*.f32`：对应 manifest 中基因名，按 cells_metadata.csv 顺序存储的 little-endian Float32。RNA/data 的原数值仅做 Float32 存储精度转换。
+- `data/manifest.json`：基因清单、分组、数值范围、零表达数、文件 SHA256、metadata 字段信息和数据来源。
+- `data/validation.json`：自动校验记录；浏览器另已实际切换验证 16 个用户指定基因和全部 37 个 metadata 字段，并完成 PNG 导出检查。
 
-<http://localhost:8000/> — or `http://localhost:8000/index.html`.
+### 注释复核
 
-## 3. Rotate
+原 “Mast cells” 群体共有 1,247 个细胞。原 RNA/data 中：TPSAB1、TPSB2、CPA3 的检出率分别约 1.20%、0.80%、0.40%，而 MLANA、DCT、TYR 分别约 92.86%、90.30%、84.36%；MITF 约 96.31%。此模式更支持黑色素细胞身份，需要回到聚类、QC 和多 marker 共表达进一步确认。此版本保留原 Mast cells 标签，并加入独立 Melanocytes 面板供核查，没有自动改名。KIT 单独阳性不能确认肥大细胞。
 
-Left-drag rotates, right-drag (or two-finger drag) pans, and the scroll wheel /
-pinch zooms. Rotation has inertia; the camera always looks at the centre of the
-point cloud. **Reset camera** in the control panel returns to the initial view.
+ACTA2/TAGLN/MYH11 是壁细胞/平滑肌相关标志，不能独立区分周细胞和血管平滑肌细胞；CLDN5/PECAM1 可在血管和淋巴管内皮间共享；CD14、CD68 等反映髓系亚群特征，不能用单基因代替整个髓系注释。此网页是表达探索和可视化工具，不进行差异检验或重新注释。
 
-## 4. Zoom
+检出率证据表：`data/mast_identity_positive_percent.csv`；平均表达表：`data/mast_identity_mean.csv`。
 
-Mouse wheel / trackpad pinch. The point size is attenuated by distance, so cells
-stay the same apparent size as you zoom (this is the `uRefDistance` term in
-`js/shaders.js`).
+## Marker 参考来源
 
-## 5. Change the point size
+- Ma et al., Nature Communications (2023), skin cell annotations and representative markers: https://www.nature.com/articles/s41467-023-39020-4
+- Human skin vascular endothelial heterogeneity (2021), blood and lymphatic endothelial markers: https://pmc.ncbi.nlm.nih.gov/articles/PMC8120211/
+- Sun-exposed / unexposed skin single-cell study (2024), pericyte and lymphatic markers: https://www.frontiersin.org/journals/medicine/articles/10.3389/fmed.2024.1453940/full
+- Skin rosacea single-cell atlas (2024), melanocyte and other lineage markers: https://www.nature.com/articles/s41467-024-52946-7
 
-* live: the **Point size** slider in the control panel (0.5 – 8).
-* permanently: `POINT_SIZE` at the top of `js/config.js` (also `POINT_OPACITY`).
+## 再导出与校验
 
-Larger values make high-density regions merge into brighter clouds; keep
-`POINT_SIZE` around 2–3.5 for a crisp, single-cell-resolved look.
+需要 R、Seurat、Matrix、jsonlite、digest。保留原网页目录中的两份 CSV 作为坐标和旧网页分值来源：
 
-## 6. Change the bloom
-
-Sliders **Bloom strength / radius / threshold**, or the constants
-`BLOOM_STRENGTH`, `BLOOM_RADIUS`, `BLOOM_THRESHOLD` in `js/config.js`.
-
-Recommended range: strength 0.35 – 0.8, radius 0.4 – 0.7, threshold 0.25 – 0.45.
-Raising the threshold keeps only the brightest cores glowing, which is what stops
-dense clusters from turning into a white blob. To switch the glow off entirely set
-`BLOOM_STRENGTH: 0`.
-
-## 7. Turn the surfaces on/off
-
-Checkbox **Show surfaces** (top of the panel) or `SURFACE_SHOW` in `js/config.js`.
-Opacity slider = `SURFACE_OPACITY` (0.13 by default, deliberately very faint).
-The surfaces are built progressively after the point cloud appears; the log panel
-(bottom of the control panel) lists, per cell type, the grid size, kernel sigma,
-iso level and triangle count — and any type that was skipped and why.
-
-The shell shader shows **only the fresnel rim**: `SURFACE_INTERIOR` (0.10) keeps
-the body almost invisible while `SURFACE_GLOW_STRENGTH` (1.3) and
-`SURFACE_FRESNEL_POWER` (2.2) make the silhouette glow, so a cluster reads as a
-translucent membrane instead of a solid plastic shell.
-
-## 7b. Visual presets (dropdown in the control panel)
-
-| preset | POINT_SIZE | POINT_OPACITY | BLOOM_STRENGTH | BLOOM_RADIUS | BLOOM_THRESHOLD | SURFACE_OPACITY | SURFACE_FRESNEL_POWER | SURFACE_GLOW_STRENGTH | COLOR_SATURATION | BACKGROUND_COLOR |
-|---|---|---|---|---|---|---|---|---|---|---|
-| Subtle | 2.0 | 0.70 | 0.30 | 0.50 | 0.42 | 0.07 | 2.8 | 1.0 | 0.80 | `#080C17` |
-| **Balanced** (default) | 2.6 | 0.85 | 0.55 | 0.55 | 0.30 | 0.13 | 2.2 | 1.3 | 0.86 | `#090D19` |
-| Strong | 3.3 | 0.95 | 0.85 | 0.65 | 0.20 | 0.20 | 1.8 | 1.8 | 0.92 | `#0A0E1C` |
-| Reference-like | 2.9 | 0.90 | 0.62 | 0.60 | 0.26 | 0.17 | 2.0 | 1.7 | 0.84 | `#090D1B` |
-
-Presets can also be selected from the URL, which is what the automated captures
-use: `index.html?preset=strong&figure=1&labels=0`.
-
-Cell colours keep their hue assignment; `COLOR_SATURATION` only mutes them, and
-`SMALL_CLUSTER_BOOST` (1.18× below 2 000 cells) keeps the sparse types from
-disappearing under bloom.
-
-## 7c. Presentation controls
-
-* **Figure Mode** (floating button, top right): hides the control panel, the
-  status bar and the mouse hint, turns the labels off, **keeps the legend** and
-  leaves the camera exactly where it is. It also keeps the current **Background**
-  mode and **Label size** — entering or leaving Figure Mode never resets them.
-  Press again to exit.
-* **Hide legend / Show legend**: hides the legend and lets the viewport use the
-  full width (works with or without Figure Mode).
-* **Reset view**: returns the camera to the initial framing.
-* **Export 2× / 4× PNG**: as described in §8.
-
-Labels are **off by default** (`SHOW_LABELS: false`) and the density surfaces are
-**on by default but faint** (`SURFACE_OPACITY: 0.13`).
-
-## 7d. Label size
-
-`Label size` slider (8 – 32 px, step 1 px, default **11.5 px**, which is exactly
-the CSS value used before the slider existed). It only changes the font size —
-and the padding/dot scale that follows from it. Label anchors, cluster centres
-and the UMAP coordinates are never touched, and the legend keeps its own font
-size.
-
-* Live: the slider in the control panel.
-* From the URL: `index.html?labelfont=20`.
-* The PNG export uses the **current** value (2× / 4× as well), so what you pick
-  on screen is what lands in the file.
-
-## 7e. Background modes
-
-`Background` dropdown: **Dark** (default, the original look), **Black**, **White**.
-The switch is instant and never reloads the page.
-
-| mode | colour | Brightness slider |
-|---|---|---|
-| Dark | the original `BACKGROUND_COLOR × BACKGROUND_BRIGHTNESS` | enabled |
-| Black | strictly `#000000` | disabled |
-| White | strictly `#FFFFFF` | disabled |
-
-### White mode = "translucent coloured ink" (its own renderer path)
-
-Dark and Black are untouched: additive blending, the original point/surface
-shaders, UnrealBloom and the tone mapping stay exactly as they were (verified by a
-pixel regression — see below). White uses a **separate material and its own
-shaders**, because a white page is a different medium: there is no dark space for
-light to glow into, and additive blending would push every cluster towards white.
-
-| | Dark / Black | White |
-|---|---|---|
-| background | rendered by WebGL (colour × brightness) | drawn by the page/PNG under a transparent canvas, so `#000000` / `#FFFFFF` stay exact |
-| point shader | original (`exp(-2.6 d²)` body + centre highlight) | white ink shader: **no centre highlight**, colour = CellMajortype hue at `WHITE_POINT_LIGHTNESS`, optional same-hue halo |
-| blending | additive (light) | normal alpha (ink) |
-| density | brighter when dense | **deeper/more saturated when dense** (`WHITE_DENSITY_ALPHA`) |
-| blur/glow | UnrealBloomPass (user slider) | bloom is set to 0 (a white page has no room for a white glow); the user's slider value is remembered and restored |
-| surfaces | additive, whitened rim | thin contour in the cluster's own darkened colour, interior ≈ 0 |
-
-The white "ink" colour is computed in **sRGB** HSL space
-(`hue` unchanged, `saturation × WHITE_POINT_SATURATION`, `lightness = WHITE_POINT_LIGHTNESS`),
-never by multiplying RGB, so the hues stay identical to the legend:
-teal Keratinocytes, blue Fibroblasts, orange Vascular Endothelial, purple Pericytes,
-green Myeloids, pink T cells, yellow Mast cells, coral Lymphatic Endothelial.
-
-### Three white candidates (Soft / Balanced / Strong)
-
-The dropdown **White style** (visible only in White mode) switches between three
-presets of the white rendering. They differ *only* in ink depth, opacity, halo and
-the surface contour — never in the UMAP, camera, point size, cluster position,
-hue or label position.
-
-| parameter | White Soft | White Balanced | White Strong |
-|---|---|---|---|
-| `WHITE_POINT_SATURATION` | 1.10 | 1.15 | 1.22 |
-| `WHITE_POINT_LIGHTNESS` | 0.70 | 0.62 | 0.50 |
-| `WHITE_POINT_OPACITY_MULTIPLIER` | 1.15 | 1.25 | 1.38 |
-| `WHITE_HALO_STRENGTH` | 0.16 | 0.22 | 0.26 |
-| `WHITE_SURFACE_OPACITY` | 0.26 | 0.38 | 0.52 |
-| `WHITE_SURFACE_RIM_DARKEN` | 0.16 | 0.22 | 0.30 |
-| `WHITE_DENSITY_ALPHA` | 0.65 | 0.85 | 1.05 |
-
-The default is **White Balanced** (`WHITE_VARIANT` in `config.js`, or
-`?whitevariant=soft|balanced|strong` in the URL). Nothing is decided for you —
-all three stay available.
-
-UI contrast in white mode (class `bg-white` on `<body>`): panel/legend/status/hud
-switch to light backgrounds with `#111827` text, sliders and buttons get dark
-accent colours, and the cluster labels become dark text on a translucent white
-pill with a 1 px border in their own CellMajortype colour. The swatches keep the
-original palette colours.
-
-## 7f. Color by — Cell type / ECM_AUC / SenCID_score / SenCID_binary / Gene expression
-
-The **Color by** dropdown at the top of the control panel selects what the *points*
-are coloured by. It never changes anything else: positions, surfaces, labels,
-camera, background, bloom and the export are untouched.
-
-| option | what it colours the points by |
-|---|---|
-| Cell type | the 8 CellMajortype palette colours (the original behaviour) |
-| ECM_AUC | the `ECM_AUC` column, continuous |
-| SenCID_score | the `SenCID_score` column, continuous |
-| SenCID_binary | the `SenCID_binary` column (0 / 1, two ends of the colormap) |
-| Gene expression | any gene you type into the **Gene** box |
-
-### Gene expression
-
-* A **Gene** input and an **Apply** button appear when *Gene expression* is
-  selected (the row is hidden in the other modes).
-* Type a gene name and press **Enter** or click **Apply** — matching is
-  case-insensitive (`BMP1`, `bmp1`, `Bmp1` all resolve to the CSV column `BMP1`).
-* The name is looked up in the **CSV header itself** (with an autocomplete list);
-  there is no hard-coded whitelist. The only excluded headers are the
-  annotations: `cell_id, UMAP3D_1/2/3, CellMajortype, Age_group, ECM_AUC,
-  SenCID_score, SenCID_binary`. `COLUMNS_TO_IGNORE` in `config.js` keeps its
-  original role for the group-column detection and is *not* used here, so `BMP1`
-  is a normal, searchable gene.
-* Success shows `Gene expression: BMP1`; a name that is not in the dataset shows
-  `Gene "XXX" was not found in the dataset.` and the previous colouring stays.
-* **BMP1 and every ECM gene use exactly the same code path** — same read, same
-  percentile clip, same colormap, same legend. There is no per-gene range,
-  boost, weight or emphasis anywhere in the code.
-
-### How the colours are computed (continuous features)
-
-1. `values[i] = Number(rows[i][field])` for all 68,646 cells; `''`, `null`,
-   `undefined`, `NaN` and `Infinity` become `0` and are counted as invalid.
-2. The 2nd and 98th percentiles of the valid values are computed once.
-3. Values are clipped to `[q02, q98]` and normalised to 0–1.
-4. The result samples the **viridis** colormap (`COLORMAP` in `config.js`),
-   produced through `THREE.Color` so the value written into `aColor` is in the
-   same colour space as before.
-5. Only `aColor` is written (`aColor.needsUpdate = true`). Positions, sizes,
-   alpha and the geometry are never touched.
-
-Cells with expression 0 — usually the majority in single-cell data — are **kept**,
-drawn with the low end of the colormap. Nothing is filtered, hidden, moved or
-resized. On the white background the colormap is darkened by one global rule
-(`COLORMAP_WHITE_*`) so it stays visible as ink; the rule is identical for every
-gene.
-
-### Cache
-
-Each column is read once and cached in `state.featureCache`
-(`{ values, min, max, q02, q98, invalidCount, zeroCount }`), so switching
-`BMP1 → COL1A1 → FN1 → BMP1` re-uses the first BMP1 computation. The 292-column
-CSV is never duplicated.
-
-### Legend / colour bar
-
-* **Cell type** keeps the original CellMajortype legend.
-* The three feature modes and Gene expression replace the title with the feature
-  name (`BMP1 expression`, `COL1A1 expression`, `ECM_AUC`, …) and show a
-  **colour bar** with the clipped range (`q02 … q98`) and the number of
-  zero-expression cells.
-* The CellMajortype list stays below, under the subtitle
-  *“CellMajortype (labels & surfaces)”*, so it is clear that it refers to the
-  labels and the shells — not to the expression colour scale.
-
-### Decoupled from everything else
-
-Point colour is completely independent of the **surfaces** (still coloured by
-CellMajortype), the **cluster labels** (dot + border still CellMajortype), the
-legend swatches, the density-surface geometry, the label anchors and the camera.
-`refreshPointColors()` dispatches on `state.colorBy`, so switching background
-(Dark/Black/White), white style, preset or Figure Mode re-applies the *current*
-colour-by mode instead of silently falling back to Cell type.
-
-## 8. Export a PNG
-
-**Export PNG 2×** / **Export PNG 4×**. The export
-* keeps the current camera angle, colours, parameters and visibility,
-* hides the control panel and legend,
-* writes a PNG at 2× or 4× the window resolution,
-* optionally burns the cluster labels into the image (checkbox *Include labels in PNG*),
-* restores the window state when it is done.
-
-Option *Transparent PNG (bloom off)*: a transparent background cannot carry the
-bloom halos, so bloom is disabled for that render (the checkbox is off by default;
-the dark background is the recommended export).
-
-The export always keeps the current camera, zoom, point size/opacity, bloom,
-surface opacity, surface/label visibility, **label size** and **background
-mode**; the Black/White backgrounds are painted into the bitmap itself, so a
-white export is exactly `#FFFFFF` and a black export exactly `#000000` (verified
-by sampling the four corners of the produced PNG).
-
-Very large exports are protected against the renderer's framebuffer limits: the
-script asks the GL driver for its limits, caps software rasterisers (SwiftShader /
-llvmpipe, used when a browser falls back to CPU rendering) at
-`EXPORT_MAX_MP_SOFTWARE` = 6 megapixels, and — should a frame still come back
-empty — halves the scale until real content appears. The effective scale is
-written to the log and into `window.__APP_LAST_EXPORT`. On a real GPU the full
-4× is produced (`EXPORT_MAX_MP_HARDWARE` = 64 MP).
-
-## 9. What each JS file does
-
-| file | responsibility |
-|---|---|
-| `config.js` | every tunable parameter + the 12-colour palette. Nothing else defines visual constants. |
-| `data.js` | CSV splitter (quote-safe), automatic column detection (`UMAP3D_1/2/3`, `CellMajortype`), typed arrays for positions/type index, robust per-type label anchors, per-point density estimate. No Three.js dependency → unit-testable in Node. |
-| `shaders.js` | GLSL for the point cloud (size attenuation, density boost, focus dimming, radial-Gaussian sprite) and for the density shells (fresnel rim glow). |
-| `surface.js` | per-type Gaussian density field on a regular grid, iso level from the median density at the cells, marching-**tetrahedra** isosurface, gradient normals. Pure JS. |
-| `main.js` | renderer/scene/camera/OrbitControls, `Points` + `ShaderMaterial`, `EffectComposer`+`RenderPass`+`UnrealBloomPass`+`OutputPass`, progressive surface building, DOM labels, legend with click-to-highlight, control panel, PNG export, resize handling. |
-
----
-
-## Implementation notes
-
-**One draw call.** All 68,646 cells live in a single `THREE.BufferGeometry`
-(`position`, `aType`, `aColor`, `aDensity`) rendered as one `THREE.Points`.
-No per-cell meshes are created.
-
-**Soft sprites.** `gl_PointCoord` drives a Gaussian falloff
-(`exp(-3.4·d²)` plus a small core highlight) with `discard` beyond the sprite
-radius, so each cell is a soft round dot with a fully transparent rim instead of
-a hard square. Additive blending makes overlapping cells brighter — dense areas
-glow naturally without inflating the cluster boundary, because the alpha of every
-single cell still falls to zero at its edge.
-
-**Bloom.** `UnrealBloomPass` sits between `RenderPass` and `OutputPass`
-(ACES tone mapping + sRGB output). The threshold is the main control that keeps
-the cluster edges readable.
-
-**Density surfaces.** For every CellMajortype: a regular grid is built over that
-type's own bounding box (default 40³), each cell is splatted with a truncated
-Gaussian kernel (`SURFACE_BANDWIDTH`, auto-clamped to 4.5–30 % of the cluster
-extent), the iso level is `SURFACE_ISO_FRACTION × median(density at the cells)` so
-it adapts to each cluster's density, and the shell is extracted with **marching
-tetrahedra** (6 tetrahedra per voxel — watertight, no 256-case table). Normals come
-from the density gradient. The material is additive with a fresnel rim term, so
-only the silhouette glows: the outline is visible while the cells inside stay
-fully visible. Types with fewer than `SURFACE_MIN_CELLS` (250) cells, a degenerate
-extent, or an unreachable iso level are skipped and the reason is written to the
-log. No cell is ever moved or removed to build a surface.
-
-**Labels.** The anchor is the coordinate-wise **median** of the type, snapped to
-the nearest real cell of that type (a robust medoid-like point — a plain mean
-would drift towards outliers). Labels are DOM elements projected from 3D every
-frame, so they always face the camera and never occlude the cloud with a big box.
-
-**Highlighting.** Clicking a legend entry sets `uFocus` to that type; all other
-types fade to `DIMMED_OPACITY` (0.10) in the shader — no cell is ever removed.
-Clicking again resets.
-
----
-
-## Verification performed
-
-| check | result |
-|---|---|
-| `node tools/test_data.mjs` | 68,646 rows parsed, 0 skipped, 8/8 type counts match the R reference, all points inside the bounding box, ~110 ms |
-| `node tools/test_surface.mjs` | isosurface built for all 8 types (43,840 triangles, ~0.6 s), all vertices finite and inside the type's bounding box |
-| `node tools/check_imports.mjs` | 30 import specifiers, 0 unresolved (import map + vendored Three.js r160) |
-| `node --check` on every JS file | no syntax errors |
-| HTTP server | all assets served: index.html 200, js/main.js 200, three.module.js 200 (1.27 MB), css 200, CSV 200 (8.6 MB) |
-| `http://localhost:8000/tools/smoke.html` in headless Chrome | **SMOKE-OK** — legend rows 8/8, cluster labels 8, 1 WebGL canvas, loading overlay hidden, status `68,646 cells · 8 cell types · 8 surfaces`, **0 console errors/warnings**, all 8 density surfaces built |
-| screenshot pixel audit (1400×900) | background #0A1118, 33.5 % lit pixels in the viewport, 6 hue families of the palette visible, legend panel with 8 swatches in palette order |
-| `node tools/capture_previews.mjs` (Chrome DevTools Protocol) | four previews at 3200×2000 in `previews/`, one per preset; state at capture time: `cells 68646, types 8, surfaces 8, labelsVisible false, figureMode true` |
-| `node tools/capture_white_modes.mjs` | `previews/white_soft.png`, `white_balanced.png`, `white_strong.png`, `dark_reference.png` — identical camera, POINT_SIZE 2.5, label size 23 px, surfaces + labels ON, Balanced preset; measures per-cluster ink coverage on the rendered pixels (`previews/white-mode-measurements.json`) |
-| dark-mode pixel regression | current Dark render vs the image captured before the white-mode work: **max difference 0.0000 (byte-identical)** |
-| black-mode pixel regression | identical apart from the transient mouse-hint line (rows 1847-1909), which is a timed DOM overlay |
-
-### Re-generating the previews
-
-```bash
-cd ~/Desktop/aging/3D_UMAP
-python3 -m http.server 8000 &            # the page has to be served over HTTP
-node tools/capture_previews.mjs --url=http://127.0.0.1:8000 --scale=2
+```sh
+Rscript tools/export_review.R /path/scRNA_merged_3DUMAP.rds /path/original_3D_UMAP /path/output_viewer
+node tools/test_data.mjs
+node tools/test_review.mjs
 ```
 
-The script drives headless Chrome over the DevTools Protocol and waits for
-`window.__APP_READY && window.__APP_SURFACES_READY` before taking each screenshot,
-so a capture can never happen before the CSV, the point cloud and all density
-shells are on screen (the plain `chrome --screenshot` flag fires too early).
+`test_review` 核对全部 434 个基因文件的长度、SHA256、零表达数和有效数值、细胞 ID 唯一性、metadata 字段及缺失值处理。
 
-`tools/smoke.html` is a self-check page: it loads the *real* `js/main.js` into the
-same DOM skeleton, records every `console.error` / `console.warn` / uncaught
-exception together with the legend/label/surface counts and writes the result
-into the page. Open it in a normal browser to re-verify after your own edits.
+## English reviewer note
 
-The browser console is free of errors and warnings in Chrome and Safari: the code
-uses only r160 APIs (`outputColorSpace`, `SRGBColorSpace`, `OutputPass`), no
-deprecated `outputEncoding`/`sRGBEncoding`.
-
-Three.js is **bundled locally** in `js/vendor/three` (r160, taken from the npm
-package), and `index.html` maps `three` + `three/addons/` to those files, so the
-viewer runs without any CDN access. If you ever prefer a CDN, replace the two
-entries of the import map with
-`https://unpkg.com/three@0.160.0/build/three.module.js` and
-`https://unpkg.com/three@0.160.0/examples/jsm/` — keep both on the same version.
-
----
-
-## Current limitations
-
-1. **Labels are DOM overlays.** They follow the 3D scene and always face the
-   camera, but they are not depth-occluded by the point cloud (a label whose
-   cluster is behind another cluster is still drawn). For the PNG export they are
-   re-drawn into the raster so the exported image matches the screen.
-2. **Transparent-background export disables bloom** (see §8). Compositing a bloom
-   halo onto an alpha channel is not well defined.
-3. **Surfaces are an approximation.** They are built from a Gaussian density
-   estimate at `SURFACE_GRID`³ resolution, so very thin filaments or concave
-   "holes" smaller than ~2 voxels may be smoothed away. They are an outline aid,
-   not a statistical boundary, and they never influence point positions.
-4. **Cell types that are too small or too diffuse are skipped** (logged). With
-   this dataset all 8 types qualify.
-5. **The 3D UMAP coordinates are taken as given** — no re-embedding, no
-   normalisation, no jitter. If the embedding itself needs re-computation, that
-   has to happen in R before export.
-6. **WebGL2 is required** (Chrome/Safari on macOS are fine; very old browsers or
-   software rendering may be slow). 68,646 additive points with bloom run at
-   interactive frame rates on Apple-silicon integrated GPUs, but the 4× export can
-   take a second or two.
-7. The surface meshes are non-indexed (de-duplicated vertices are not merged);
-   this costs a little memory but removes a whole class of indexing bugs.
+This browser-based atlas displays 68,646 cells at their original 3D UMAP coordinates. It provides all 37 metadata fields from the Seurat object and 434 selected RNA genes, including the original ECM panel and canonical lineage markers. Expression is read from the Seurat RNA/data layer without re-normalization. Genes are loaded individually; color legends report the selected display range. PNG figures and view/provenance records can be exported. Original annotations are retained; the group originally labelled “Mast cells” requires review because its marker profile is strongly melanocytic. This viewer does not perform differential expression testing or re-annotation.
