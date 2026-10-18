@@ -32,6 +32,12 @@ export function splitCsvLine(line) {
   return out;
 }
 
+/** Keep the requested annotation consistent when loading older CSV versions. */
+export function normalizeCellTypeLabel(value) {
+  const text = String(value ?? '');
+  return /^mast\s+cells?$/i.test(text.trim()) ? 'Melanocytes' : text;
+}
+
 /** Normalise a header name for fuzzy matching. */
 function norm(s) {
   return String(s).trim().toLowerCase().replace(/[\s._-]+/g, '');
@@ -121,7 +127,7 @@ export function parseUMAPCsv(text, cfg) {
   for (let l = first + 1; l < lines.length; l++) {
     const raw = lines[l];
     if (!raw || raw.trim() === '') continue;
-    const f = splitCsvLine(raw);
+    const f = splitCsvLine(raw).map(normalizeCellTypeLabel);
     const x = Number(f[ix]), y = Number(f[iy]), z = Number(f[iz]);
  const g = f[ig];
 

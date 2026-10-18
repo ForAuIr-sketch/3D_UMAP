@@ -68,7 +68,7 @@
      "granularitySD": 6.9
     },
     {
-     "text": "Mast cells",
+     "text": "Melanocytes",
      "n": 18080,
      "tintedFraction": 0.1476,
      "strongInkFraction": 0.0423,
@@ -169,7 +169,7 @@
      "granularitySD": 9.2
     },
     {
-     "text": "Mast cells",
+     "text": "Melanocytes",
      "n": 18080,
      "tintedFraction": 0.1612,
      "strongInkFraction": 0.0815,
@@ -265,7 +265,7 @@
      "granularitySD": 12.5
     },
     {
-     "text": "Mast cells",
+     "text": "Melanocytes",
      "n": 18080,
      "tintedFraction": 0.167,
      "strongInkFraction": 0.1007,
@@ -361,7 +361,7 @@
      "granularitySD": 84.7
     },
     {
-     "text": "Mast cells",
+     "text": "Melanocytes",
      "n": 18400,
      "tintedFraction": 1,
      "strongInkFraction": 0.9191,

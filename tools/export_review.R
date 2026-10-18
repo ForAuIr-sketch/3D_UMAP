@@ -4,17 +4,18 @@ if(length(args)!=3)stop('Usage: Rscript tools/export_review.R source.rds origina
 source_file <- args[1]
 viewer_dir <- args[2]
 relabel_annotations <- function(v) {
-  aliases <- c('Mast cell', 'Mast cells')
+  is_old_label <- function(values) grepl('^mast[[:space:]]+cells?$', values, ignore.case=TRUE)
   if (is.factor(v)) {
     new_levels <- levels(v)
-    new_levels[new_levels %in% aliases] <- 'Melanocytes'
+    new_levels[is_old_label(new_levels)] <- 'Melanocytes'
     values <- as.character(v)
-    values[values %in% aliases] <- 'Melanocytes'
+    values[is_old_label(values)] <- 'Melanocytes'
     return(factor(values, levels=unique(new_levels), ordered=is.ordered(v)))
   }
-  if (is.character(v)) v[v %in% aliases] <- 'Melanocytes'
+  if (is.character(v)) v[is_old_label(v)] <- 'Melanocytes'
   v
 }
+
 root <- args[3];dir.create(file.path(root,'data/genes'),recursive=TRUE,showWarnings=FALSE)
 ref <- read.csv(file.path(viewer_dir,'data/umap3d_celltype.csv'),check.names=FALSE)
 ref[] <- lapply(ref,relabel_annotations)

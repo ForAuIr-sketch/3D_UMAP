@@ -82,3 +82,7 @@ node tools/test_review.mjs
 ## English reviewer note
 
 This browser-based atlas displays 68,646 cells at their original 3D UMAP coordinates. It provides all 37 metadata fields from the Seurat object and 434 selected RNA genes, including the original ECM panel and canonical lineage markers. Expression is read from the Seurat RNA/data layer without re-normalization. Genes are loaded individually; color legends report the selected display range. PNG figures and view/provenance records can be exported. The 1,247-cell group is labelled Melanocytes following the user-requested annotation correction on 19 October 2026. Matching labels in fine annotations are updated consistently. The original RDS, cell coordinates, cell order, and expression values are unchanged. This viewer does not perform differential expression testing.
+
+## 网页版本刷新（2026-10-19）
+
+本版本入口、主脚本、配置、数据模块及CSV使用一致的版本标记；注释数据加载时禁止复用旧缓存。读取旧版CSV时，旧注释也会统一为Melanocytes，确保Cell type图例、三维标签和metadata展示一致。历史文本记录中的名称已同步更正。

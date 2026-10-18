@@ -17,7 +17,7 @@ export const CONFIG = {
    * below are just the preferred candidates, and COLUMNS_TO_IGNORE guarantees
    * that BMP1 is never touched.
    * ---------------------------------------------------------------------- */
-  DATA_PATH: 'data/cells_metadata.csv',
+  DATA_PATH: 'data/cells_metadata.csv?v=20261019-melanocytes-r3',
   COLUMN_CANDIDATES: {
     x: ['UMAP3D_1', 'UMAP_1', 'UMAP1', 'umap_1', 'x', 'X'],
     y: ['UMAP3D_2', 'UMAP_2', 'UMAP2', 'umap_2', 'y', 'Y'],

@@ -17,8 +17,8 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
-import { CONFIG, PRESETS, DEFAULT_PRESET, WHITE_VARIANTS, colorForIndex } from './config.js';
-import { parseUMAPCsv, computeLabelAnchors, computePointDensity } from './data.js';
+import { CONFIG, PRESETS, DEFAULT_PRESET, WHITE_VARIANTS, colorForIndex } from './config.js?v=20261019-melanocytes-r3';
+import { parseUMAPCsv, computeLabelAnchors, computePointDensity } from './data.js?v=20261019-melanocytes-r3';
 import { buildDensitySurface } from './surface.js';
 import {
   pointsVertexShader, pointsFragmentShader,
@@ -75,7 +75,7 @@ async function init() {
   createComposer();
 
   setStatus('loading CSV …');
-  const [text, manifestText] = await Promise.all([loadText(CONFIG.DATA_PATH), loadText('data/manifest.json')]);
+  const [text, manifestText] = await Promise.all([loadText(CONFIG.DATA_PATH), loadText('data/manifest.json?v=20261019-melanocytes-r3')]);
   state.manifest = JSON.parse(manifestText);
   state.parsed = parseUMAPCsv(text, CONFIG);
   if (state.parsed.n !== state.manifest.cells) throw new Error('Manifest / cell count mismatch');
@@ -511,7 +511,7 @@ function createComposer() {
 
 /* ================================================================== data == */
 async function loadText(url) {
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error(`Could not load ${url} (HTTP ${res.status})`);
   return res.text();
 }
